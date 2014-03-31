@@ -1,0 +1,4 @@
+# file: vagrant-hosts
+
+[zookeeper]
+node1

@@ -1,0 +1,68 @@
+---
+# file: roles/common/tasks/main.yml
+
+- name: update all packages to the latest version
+  apt: update_cache=yes cache_valid_time=3600
+
+- name: install Packages
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - ntp
+    - curl
+    - git
+    - htop
+    - build-essential
+    - openjdk-7-jdk
+    - python-pycurl
+
+- name: configure NTP
+  file: src=ntp.conf dest=/etc/ntp.conf
+  notify:
+    - restart ntp
+  tags: ntp
+
+- name: start NTP
+  service: name=ntp state=running enabled=yes
+  tags: ntp
+
+- name: set overcommit to 0 in /etc/sysctl.conf
+  sysctl: name=vm.overcommit_memory value=0 state=present
+
+- name: set TCP retries to 5 in /etc/sysctl.conf
+  sysctl: name=net.ipv4.tcp_retries2 value=5 state=present
+
+- name: update /etc/pam.d/su
+  lineinfile: dest=/etc/pam.d/su
+    state=present
+    regexp=^
+    line='session required        pam_limits.so'
+    
+- name: update /etc/security/limits.conf nofile
+  lineinfile: dest=/etc/security/limits.conf
+    state=present
+    line='mapr - nofile 64000'
+    
+- name: update /etc/security/limits.conf noproc
+  lineinfile: dest=/etc/security/limits.conf
+    state=present
+    line='mapr - noproc 64000'
+    
+- name: update /etc/hosts remove 127.0.1.1
+  lineinfile: dest=/etc/hosts
+    state=absent
+    regexp='^127.0.1.1'
+
+- name: update /etc/hosts add new hostname and IP
+  lineinfile: dest=/etc/hosts
+    state=present
+    regexp='^'
+    line='{{ ansible_eth1.ipv4.address}} {{ ansible_fqdn }}'
+
+- name: add MapR 3.1.0 apt repository
+  apt_repository: repo='deb http://package.mapr.com/releases/v3.1.0/ubuntu/ mapr optional'
+
+- name: add MapR ecosystem apt repository
+  apt_repository: repo='deb http://package.mapr.com/releases/ecosystem/ubuntu binary/'
+
+- name: update all packages to the latest version
+  apt: update_cache=yes 
