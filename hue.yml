@@ -1,0 +1,8 @@
+---
+# file hue.yml
+- hosts: all
+  vars:
+    cluster_name: my.cluster.com
+  sudo: yes
+  roles:
+    - hue

@@ -10,7 +10,8 @@
 - name: install Packages
   apt: pkg={{ item }} state=latest
   with_items:
-    - mysql-common
+    - mysql-server
+    - python-mysqldb
     - python-software-properties
     - python2.6
     - libssl0.9.8
@@ -20,6 +21,18 @@
     - mapr-httpfs
     - mapr-hive
     - mapr-oozie
+
+- name: setup mysql root password
+  command: mysqladmin -u root password mapr
+
+- name: copy my.conf
+  file: src=my.cnf dest=~/.my.cnf
+
+- name: create hive metastore db
+- mysql_db: name=hive_11 state=present
+
+- name: create hive metastore db user
+- mysql_user: name=mapr password=mapr priv=hive_11.*:ALL state=present
 
 - name: copy hue plugins to job trackers
   command: cp /opt/mapr/hue/hue*/desktop/libs/hadoop/java-lib/hue-plugins-*.jar /opt/mapr/hadoop/hadoop*/lib/
