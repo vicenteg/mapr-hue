@@ -3,6 +3,7 @@
 - hosts: all
   vars:
     cluster_name: my.cluster.com
+    jobtracker_nodes: m7a
   sudo: yes
   roles:
     - hue
