@@ -1,9 +1,6 @@
 ---
 # file: roles/common/tasks/main.yml
 
-- name: add third-party repo for python-2.6
-  apt_repository: repo='ppa:fkrull/deadsnakes'
-
 - name: update all packages to the latest version
   apt: update_cache=yes 
 
@@ -12,10 +9,6 @@
   with_items:
     - python-mysqldb
     - python-software-properties
-    - python2.6
-    - libssl0.9.8
-    - libxslt1.1
-    - libsasl2-modules-gssapi-mit
     - mapr-hue
     - mapr-httpfs
     - mapr-hive
