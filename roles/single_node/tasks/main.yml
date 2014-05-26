@@ -1,0 +1,14 @@
+---
+# file: roles/single_node/tasks/main.yml
+
+- name: install MapR packages
+  apt: pkg={{ item }} state=latest force=yes
+  with_items:
+    - mapr-tasktracker
+    - mapr-fileserver
+    - mapr-cldb
+    - mapr-jobtracker
+    - mapr-nfs
+    - mapr-webserver
+    - mapr-zookeeper
+    - mapr-hbase

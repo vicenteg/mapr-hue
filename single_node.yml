@@ -1,0 +1,7 @@
+---
+# file single_node.yml
+- hosts: all
+  sudo: yes
+  roles:
+    - common
+    - single_node

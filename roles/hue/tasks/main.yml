@@ -1,0 +1,138 @@
+---
+# file: roles/common/tasks/main.yml
+
+- name: add third-party repo for python-2.6
+  apt_repository: repo='ppa:fkrull/deadsnakes'
+
+- name: update all packages to the latest version
+  apt: update_cache=yes 
+
+- name: install Packages
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - mysql-common
+    - python-software-properties
+    - python2.6
+    - libssl0.9.8
+    - libxslt1.1
+    - libsasl2-modules-gssapi-mit
+    - mapr-hue
+    - mapr-httpfs
+    - mapr-hive
+    - mapr-oozie
+
+- name: copy hue plugins to job trackers
+  command: cp /opt/mapr/hue/hue*/desktop/libs/hadoop/java-lib/hue-plugins-*.jar /opt/mapr/hadoop/hadoop*/lib/
+
+- name: configure webhdfs_url
+  lineinfile: dest=/opt/mapr/hue/hue-2.5.0/desktop/conf/hue.ini
+    state=present
+    regexp='^webhdfs_url'
+    line='webhdfs_url=http://{{ ansible_eth1.ipv4.address }}:14000/webhdfs/v1'
+
+- name: configure jobtracker_host
+  lineinfile: dest=/opt/mapr/hue/hue-2.5.0/desktop/conf/hue.ini
+    state=present
+    regexp='^jobtracker_host'
+    line='jobtracker_host={{ ansible_eth1.ipv4.address }}'
+
+- name: configure oozie_url
+  lineinfile: dest=/opt/mapr/hue/hue-2.5.0/desktop/conf/hue.ini
+    state=present
+    regexp='^oozie_url'
+    line='oozie_url={{ ansible_eth1.ipv4.address }}:11000/oozie'
+
+- name: configure beeswax_url
+  lineinfile: dest=/opt/mapr/hue/hue-2.5.0/desktop/conf/hue.ini
+    state=present
+    regexp=^beeswax_server_host'
+    line='beeswax_server_host={{ ansible_eth1.ipv4.address }}'
+
+- name: configure beeswax_meta_server_host
+  lineinfile: dest=/opt/mapr/hue/hue-2.5.0/desktop/conf/hue.ini
+    state=present
+    regexp=^beeswax_meta_server_host'
+    line='beeswax_meta_server_host={{ ansible_eth1.ipv4.address }}'
+
+- name: configure hive home directory
+  lineinfile: dest=/opt/mapr/hue/hue-2.5.0/desktop/conf/hue.ini
+    state=present
+    regexp='^hive_home_dir'
+    line='hive_home_dir=/opt/mapr/hive/hive-0.12'
+
+ - name: configure hive conf directory
+  lineinfile: dest=/opt/mapr/hue/hue-2.5.0/desktop/conf/hue.ini
+    state=present
+    regexp='^hive_conf_dir'
+    line='hive_conf_dir=/opt/mapr/hive/hive-0.12/conf'
+
+- name: copy hive-site.xml
+  template: src=hive-site.xml.j2 dest=/opt/mapr/hive/conf/hive-site.xml 
+
+- name: copy mapred-site.xml
+  file: src=mapred-site.xml dest=/opt/mapr/hadoop/hadoop-0.20.2/conf/mapred-site.xml 
+
+- name: copy core-site.xml
+  file: src=core-site.xml dest=/opt/mapr/hadoop/hadoop-0.20.2/conf/core-site.xml 
+
+- name: copy oozie-site.xml
+  file: src=oozie-site.xml dest=/opt/mapr/oozie/oozie-4.0.0/oozie-site.xml 
+
+- name: copy httpfs-site.xml
+  file: src=httpfs-site.xml dest=/opt/mapr/httpfs/httpfs-1.0/etc/hadoop/httpfs-site.xml
+
+- name: decompress oozie examples
+  command: tar zxf /opt/mapr/oozie/oozie*/oozie-examples.tar.gz --strip-components 1  -C /mapr/my.cluster.com/oozie/share/lib
+
+- name: decompress oozie shared libs
+  command: tar zxf /opt/mapr/oozie/oozie*/oozie-sharelib-4.0.0-mapr-1403.tar.gz -C /mapr/my.cluster.com/oozie
+
+- name: set oozie file permissions
+  file: path=/mapr/my.cluster.com/oozie mode=0777 recurse=yes
+
+- name: download mysql java connector
+  command: wget -O /tmp/mysql-connector.tar.gz http://www.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.18.tar.gz/from/http://mysql.he.net/%8Chttp://mysql.he.net/
+
+- name: install mysql java connector
+  command: cp /tmp/mysql-connector-java-5.1.18/mysql-connector-java-5.1.18-bin.jar /opt/mapr/hive/hive*/lib
+
+    ---------
+
+- name: set TCP retries to 5 in /etc/sysctl.conf
+  sysctl: name=net.ipv4.tcp_retries2 value=5 state=present
+
+- name: update /etc/pam.d/su
+  lineinfile: dest=/etc/pam.d/su
+    state=present
+    regexp=^
+    line='session required        pam_limits.so'
+    
+- name: update /etc/security/limits.conf nofile
+  lineinfile: dest=/etc/security/limits.conf
+    state=present
+    line='mapr - nofile 64000'
+    
+- name: update /etc/security/limits.conf noproc
+  lineinfile: dest=/etc/security/limits.conf
+    state=present
+    line='mapr - noproc 64000'
+    
+- name: update /etc/hosts remove 127.0.1.1
+  lineinfile: dest=/etc/hosts
+    state=absent
+    regexp='^127.0.1.1'
+
+- name: update /etc/hosts add new hostname and IP
+  lineinfile: dest=/etc/hosts
+    state=present
+    regexp='^'
+    line='{{ ansible_eth1.ipv4.address}} {{ ansible_fqdn }}'
+
+- name: add MapR 3.1.0 apt repository
+  apt_repository: repo='deb http://package.mapr.com/releases/v3.1.0/ubuntu/ mapr optional'
+
+- name: add MapR ecosystem apt repository
+  apt_repository: repo='deb http://package.mapr.com/releases/ecosystem/ubuntu binary/'
+
+- name: update all packages to the latest version
+  apt: update_cache=yes 

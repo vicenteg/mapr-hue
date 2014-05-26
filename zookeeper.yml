@@ -1,6 +1,0 @@
----
-# file zookeeper.yml
-- hosts: zookeeper
-  sudo: yes
-  roles:
-    - common

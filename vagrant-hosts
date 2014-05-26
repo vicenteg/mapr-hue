@@ -1,4 +1,4 @@
 # file: vagrant-hosts
 
-[zookeeper]
-node1
+[all]
+m7a
