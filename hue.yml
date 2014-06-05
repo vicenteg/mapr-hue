@@ -6,4 +6,5 @@
     jobtracker_nodes: m7a
   sudo: yes
   roles:
+    - common
     - hue
