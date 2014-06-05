@@ -3,7 +3,11 @@
 - hosts: all
   vars:
     cluster_name: my.cluster.com
-    jobtracker_nodes: m7a
+    hue_network_interface: eth1
+    jobtracker_nodes: m7b
+    oozie_nodes: m7b
+    hue_nodes: m7b
+    beeswax_nodes: m7b
   sudo: yes
   roles:
     - common

@@ -23,6 +23,33 @@
     - mysql-server
   when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
 
+###
+### Register variables for versions of installed packages so there's no hard coded badness
+###
+
+- name: Check and register Hue version
+  action: shell ls /opt/mapr/hue | grep hue- | sort | tail -n1
+  register: hue_version
+
+- name: Check and register httpfs version
+  shell: ls /opt/mapr/httpfs | grep httpfs- | sort | tail -n1
+  register: httpfs_version
+
+- name: Check and register Hive version
+  shell: ls /opt/mapr/hive | grep hive- | sort | tail -n1
+  register: hive_version
+
+- name: Check and register Oozie version
+  shell: ls /opt/mapr/oozie | grep oozie- | sort | tail -n1
+  register: oozie_version
+
+- name: Check and register hadoop version
+  shell: ls /opt/mapr/hadoop | grep hadoop- | sort | tail -n1
+  register: hadoop_version
+
+###
+### MySQL setup if required
+###
 
 - name: configure mysql.conf
   lineinfile: dest=/etc/mysql/my.cnf
@@ -46,106 +73,69 @@
   mysql_user: name=mapr password=mapr priv=hive_11.*:ALL state=present host=%
 
 - name: copy hue plugins to job trackers
-  shell: cp /opt/mapr/hue/hue*/desktop/libs/hadoop/java-lib/hue-plugins-*.jar /opt/mapr/hadoop/hadoop*/lib/
+  shell: cp /opt/mapr/hue/{{hue_version.stdout}}/desktop/libs/hadoop/java-lib/hue-plugins-*.jar /opt/mapr/hadoop/{{hadoop_version.stdout}}/lib/
 
-- name: configure webhdfs_url
-  lineinfile: dest=/opt/mapr/hue/hue-2.5.0/desktop/conf/hue.ini
-    state=present
-    regexp='^webhdfs_url'
-    line='webhdfs_url=http://{{ansible_eth1.ipv4.address}}:14000/webhdfs/v1'
+###
+### Install configs
+###
 
-- name: configure jobtracker_host
-  lineinfile: dest=/opt/mapr/hue/hue-2.5.0/desktop/conf/hue.ini
-    state=present
-    regexp='^jobtracker_host'
-    line='jobtracker_host={{ansible_eth1.ipv4.address}}'
+- name: Install hue.ini
+  template: src=hue.ini.j2 dest=/opt/mapr/hue/{{hue_version.stdout}}/desktop/conf/hue.ini 
 
-- name: configure oozie_url
-  lineinfile: dest=/opt/mapr/hue/hue-2.5.0/desktop/conf/hue.ini
-    state=present
-    regexp='^oozie_url'
-    line='oozie_url={{ansible_eth1.ipv4.address}}:11000/oozie'
+- name: Install hive-site.xml
+  template: src=hive-site.xml.j2 dest=/opt/mapr/hive/{{hive_version.stdout}}/conf/hive-site.xml 
 
-- name: configure beeswax_url
-  lineinfile: dest=/opt/mapr/hue/hue-2.5.0/desktop/conf/hue.ini
-    state=present
-    regexp='^beeswax_server_host'
-    line='beeswax_server_host={{ansible_eth1.ipv4.address}}'
+- name: Install mapred-site.xml
+  copy: src=mapred-site.xml dest=/opt/mapr/hadoop/{{hadoop_version.stdout}}/conf/mapred-site.xml 
 
-- name: configure beeswax_meta_server_host
-  lineinfile: dest=/opt/mapr/hue/hue-2.5.0/desktop/conf/hue.ini
-    state=present
-    regexp='^beeswax_meta_server_host'
-    line='beeswax_meta_server_host={{ansible_eth1.ipv4.address}}'
+- name: Install core-site.xml
+  copy: src=core-site.xml dest=/opt/mapr/hadoop/{{hadoop_version.stdout}}/conf/core-site.xml 
 
-- name: configure hive home directory
-  lineinfile: dest=/opt/mapr/hue/hue-2.5.0/desktop/conf/hue.ini
-    state=present
-    regexp='^  hive_home_dir' backrefs=yes
-    line='hive_home_dir=/opt/mapr/hive/hive-0.12'
+- name: Install oozie-site.xml
+  copy: src=oozie-site.xml dest=/opt/mapr/oozie/{{oozie_version.stdout}}/oozie-site.xml 
 
-- name: configure hive conf directory
-  lineinfile: dest=/opt/mapr/hue/hue-2.5.0/desktop/conf/hue.ini
-    state=present
-    regexp='^  hive_conf_dir' backrefs=yes
-    line='hive_conf_dir=/opt/mapr/hive/hive-0.12/conf'
+- name: Install httpfs-site.xml
+  copy: src=httpfs-site.xml dest=/opt/mapr/httpfs/{{httpfs_version.stdout}}/etc/hadoop/httpfs-site.xml
 
-- name: configure hive home directory
-  lineinfile: dest=/opt/mapr/hue/hue-2.5.0/desktop/conf/hue.ini
-    state=present
-    regexp='^hive_home_dir' backrefs=yes
-    line='hive_home_dir=/opt/mapr/hive/hive-0.12'
+###
+### Install Oozie files
+###
 
-- name: configure hive conf directory
-  lineinfile: dest=/opt/mapr/hue/hue-2.5.0/desktop/conf/hue.ini
-    state=present
-    regexp='^hive_conf_dir' backrefs=yes
-    line='hive_conf_dir=/opt/mapr/hive/hive-0.12/conf'
+- name: Create Oozie shared lib directory
+  shell: hadoop fs -mkdir /oozie/share/lib
 
-- name: copy hive-site.xml
-  template: src=hive-site.xml.j2 dest=/opt/mapr/hive/hive-0.12/conf/hive-site.xml 
+- name: Decompress Oozie examples
+  shell: tar zxf /opt/mapr/oozie/oozie*/oozie-examples.tar.gz -C /opt/mapr/oozie/oozie*/
 
-- name: copy mapred-site.xml
-  copy: src=mapred-site.xml dest=/opt/mapr/hadoop/hadoop-0.20.2/conf/mapred-site.xml 
+- name: Decompress Oozie shared libs
+  shell: tar zxf /opt/mapr/oozie/oozie*/oozie-sharelib*.tar.gz -C /opt/mapr/oozie/oozie*/
 
-- name: copy core-site.xml
-  copy: src=core-site.xml dest=/opt/mapr/hadoop/hadoop-0.20.2/conf/core-site.xml 
+- name: Move Oozie examples into place
+  shell: hadoop fs -put /opt/mapr/oozie/{{oozie_version.stdout}}/examples/* /oozie/share/lib
 
-- name: copy oozie-site.xml
-  copy: src=oozie-site.xml dest=/opt/mapr/oozie/oozie-4.0.0/oozie-site.xml 
+- name: Move Oozie sharelib into place
+  shell: hadoop fs -put /opt/mapr/oozie/{{oozie_version.stdout}}/share/lib/* /oozie/share/lib
 
-- name: copy httpfs-site.xml
-  copy: src=httpfs-site.xml dest=/opt/mapr/httpfs/httpfs-1.0/etc/hadoop/httpfs-site.xml
+- name: Set Oozie file permissions
+  shell: hadoop fs -chmod -R 777 /oozie
 
-- name: Create oozie shared lib directory
-  file: path=/mapr/{{cluster_name}}/oozie/share/lib state=directory
+###
+### Install the MySQL Java connector no-one tells you about
+###
 
-- name: decompress oozie examples
-  shell: tar zxf /opt/mapr/oozie/oozie*/oozie-examples.tar.gz --strip-components 1 -C /mapr/{{cluster_name}}/oozie/share/lib
+- name: Install mysql java connector
+  copy: src=mysql-connector-java-5.1.18-bin.jar dest=/opt/mapr/hive/{{hive_version.stdout}}/lib
 
-- name: decompress oozie shared libs
-  shell: tar zxf /opt/mapr/oozie/oozie*/oozie-sharelib-4.0.0-mapr-1403.tar.gz -C /mapr/{{cluster_name}}/oozie
-
-- name: set oozie file permissions
-  file: path=/mapr/{{cluster_name}}/oozie mode=0777 recurse=yes
-
-- name: install mysql java connector
-  copy: src=mysql-connector-java-5.1.18-bin.jar dest=/opt/mapr/hive/hive-0.12/lib
-
-- name: restart jobtracker
-  shell: maprcli node services -jobtracker restart -nodes {{jobtracker_nodes}}
-
-- name: Pausing for 15 seconds to allow jobtracker to fire up
-  pause: seconds=15
-
-- name: Stop oozie
-  shell: maprcli node services -name oozie -action stop -nodes {{jobtracker_nodes}}
-
-- name: Start oozie
-  shell: maprcli node services -name oozie -action start -nodes {{jobtracker_nodes}}
-
-- name: Start hue
-  shell: maprcli node services -name hue -action start -nodes {{jobtracker_nodes}}
-
-- name: Start beeswax
-  shell: maprcli node services -name hue -action start -nodes {{jobtracker_nodes}}
+###
+### Party Time
+###
+ 
+- name: Start all services
+  shell: echo "Let's get the party started"
+  notify: 
+  - Restart Jobtracker
+  - Jobtracker pause
+  - Stop Oozie
+  - Start Oozie
+  - Start Hue
+  - Start Beeswax

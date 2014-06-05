@@ -1,4 +1,38 @@
 ---
 # file: roles/common/handlers/main.yml
+
 - name: restart ntp
   service: name=ntp state=restarted
+
+- name: Restart Jobtracker
+  shell: maprcli node services -jobtracker restart -nodes {{jobtracker_nodes}}
+
+- name: Jobtracker pause
+  pause: seconds=15
+
+- name: Start Oozie
+  shell: maprcli node services -name oozie -action start -nodes {{oozie_nodes}}
+
+- name: Stop Oozie
+  shell: maprcli node services -name oozie -action stop -nodes {{oozie_nodes}}
+
+- name: Restart Oozie
+  shell: maprcli node services -name oozie -action restart -nodes {{oozie_nodes}}
+
+- name: Start Hue
+  shell: maprcli node services -name hue -action start -nodes {{hue_nodes}}
+
+- name: Stop Hue
+  shell: maprcli node services -name hue -action stop -nodes {{hue_nodes}}
+
+- name: Restart Hue
+  shell: maprcli node services -name hue -action restart -nodes {{hue_nodes}}
+
+- name: Start Beeswax
+  shell: maprcli node services -name beeswax -action start -nodes {{beeswax_nodes}}
+
+- name: Stop Beeswax
+  shell: maprcli node services -name beeswax -action stop -nodes {{beeswax_nodes}}
+
+- name: Restart Beeswax
+  shell: maprcli node services -name beeswax -action restart -nodes {{beeswax_nodes}}
