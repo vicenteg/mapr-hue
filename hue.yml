@@ -1,14 +1,21 @@
 ---
 # file hue.yml
+
 - hosts: all
-  vars:
-    cluster_name: my.cluster.com
-    hue_network_interface: eth1
-    jobtracker_nodes: m7b
-    oozie_nodes: m7b
-    hue_nodes: m7b
-    beeswax_nodes: m7b
   sudo: yes
   roles:
     - common
     - hue
+
+- hosts: jobtracker_nodes
+  sudo: yes
+  tasks:
+    - include: roles/hue/tasks/plugins.yml
+
+- hosts: all
+  gather_facts : no
+  sudo: yes
+  roles:
+    - common
+  tasks:
+    - include: roles/hue/tasks/services.yml

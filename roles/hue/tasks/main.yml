@@ -1,7 +1,9 @@
 ---
 # file: roles/common/tasks/main.yml
 
-- name: install Packages
+- include: prereqs.yml
+
+- name: Install Packages
   apt: pkg={{ item }} state=latest force=yes
   with_items:
     - mapr-hue
@@ -9,7 +11,6 @@
     - mapr-hive
     - mapr-hivemetastore
     - mapr-oozie
-    - mysql-server
   when: ansible_distribution == 'Ubuntu'
 
 - name: Install Packages
@@ -20,64 +21,12 @@
     - mapr-hive
     - mapr-hivemetastore
     - mapr-oozie
-    - mysql-server
   when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
 
-###
-### Register variables for versions of installed packages so there's no hard coded badness
-###
+- include: check_versions.yml
+- include: mysql.yml
 
-- name: Check and register Hue version
-  action: shell ls /opt/mapr/hue | grep hue- | sort | tail -n1
-  register: hue_version
-
-- name: Check and register httpfs version
-  shell: ls /opt/mapr/httpfs | grep httpfs- | sort | tail -n1
-  register: httpfs_version
-
-- name: Check and register Hive version
-  shell: ls /opt/mapr/hive | grep hive- | sort | tail -n1
-  register: hive_version
-
-- name: Check and register Oozie version
-  shell: ls /opt/mapr/oozie | grep oozie- | sort | tail -n1
-  register: oozie_version
-
-- name: Check and register hadoop version
-  shell: ls /opt/mapr/hadoop | grep hadoop- | sort | tail -n1
-  register: hadoop_version
-
-###
-### MySQL setup if required
-###
-
-- name: configure mysql.conf
-  lineinfile: dest=/etc/mysql/my.cnf
-    state=present
-    regexp='^bind-address'
-    line='bind-address = {{ansible_eth1.ipv4.address}}'
-
-- name: Start mysql service
-  service: name=mysql state=restarted
-
-- name: Setup mysql root password
-  command: mysqladmin -u root password mapr
-
-- name: Copy my.conf
-  copy: src=my.cnf dest=~/.my.cnf
-
-- name: Create Hive metastore db
-  mysql_db: name=hive_11 state=present
-
-- name: Create Hive metastore db user
-  mysql_user: name=mapr password=mapr priv=hive_11.*:ALL state=present host=%
-
-- name: Copy Hue plugins to Jobtrackers
-  shell: cp /opt/mapr/hue/{{hue_version.stdout}}/desktop/libs/hadoop/java-lib/hue-plugins-*.jar /opt/mapr/hadoop/{{hadoop_version.stdout}}/lib/
-
-###
 ### Install configs
-###
 
 - name: Install hue.ini
   template: src=hue.ini.j2 dest=/opt/mapr/hue/{{hue_version.stdout}}/desktop/conf/hue.ini 
@@ -97,9 +46,7 @@
 - name: Install httpfs-site.xml
   copy: src=httpfs-site.xml dest=/opt/mapr/httpfs/{{httpfs_version.stdout}}/etc/hadoop/httpfs-site.xml
 
-###
 ### Install Oozie files
-###
 
 - name: Create Oozie shared lib directory
   shell: hadoop fs -mkdir /oozie/share/lib
@@ -118,27 +65,3 @@
 
 - name: Set Oozie file permissions
   shell: hadoop fs -chmod -R 777 /oozie
-
-###
-### Install the MySQL Java connector no-one tells you about
-###
-
-- name: Install mysql java connector
-  copy: src=mysql-connector-java-5.1.18-bin.jar dest=/opt/mapr/hive/{{hive_version.stdout}}/lib
-
-###
-### Party Time
-###
- 
-- name: Start all services
-  shell: echo "Let's get the party started"
-  notify: 
-  - Restart Jobtracker
-  - Service pause
-  - Stop Oozie
-  - Service pause
-  - Start Oozie
-  - Service pause
-  - Start Hue
-  - Service pause
-  - Start Beeswax

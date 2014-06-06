@@ -1,0 +1,58 @@
+---
+# file: roles/hue/tasks/prereqs.yml
+
+- name: Update all packages to the latest version
+  apt: update_cache=yes cache_valid_time=3600
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Install Packages
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - python-pycurl
+    - python-mysqldb
+    - python-software-properties
+    - mysql-common # libmysqlclient16
+    - libssl0.9.8
+    - libxslt1.1
+    - libsasl2-modules-gssapi-mit
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Update all packages to the latest version
+  apt: update_cache=yes 
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Copy libmysqlclient pre-requisite
+  copy: src=libmysqlclient16_5.1.58-1ubuntu5_amd64.deb dest=/tmp/libmysqlclient16_5.1.58-1ubuntu5_amd64.deb
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Install libmysqlclient pre-requisite
+  command: dpkg -i /tmp/libmysqlclient16_5.1.58-1ubuntu5_amd64.deb
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Download Berkeley DB lib pre-requisite for Python 2.6
+  get_url: url=http://mirrors.kernel.org/ubuntu/pool/main/d/db4.8/libdb4.8_4.8.30-11ubuntu1_amd64.deb dest=/tmp
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Download Python 2.6 minimal pre-requisite
+  get_url: url=http://uk.archive.ubuntu.com/ubuntu/pool/main/p/python2.6/python2.6-minimal_2.6.5-1ubuntu6.3_amd64.deb dest=/tmp
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Download Python 2.6 lib pre-requisite
+  get_url: url=http://uk.archive.ubuntu.com/ubuntu/pool/main/p/python2.6/libpython2.6_2.6.5-1ubuntu6_amd64.deb dest=/tmp
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Download Python 2.6 pre-requisite
+  get_url: url=http://uk.archive.ubuntu.com/ubuntu/pool/main/p/python2.6/python2.6_2.6.5-1ubuntu6.3_amd64.deb dest=/tmp
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Install Berkeley DB lib pre-requisite for Python 2.6
+  command: dpkg -i /tmp/libdb4.8_4.8.30-11ubuntu1_amd64.deb
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Install Python 2.6 minimal pre-requisite
+  command: dpkg -i /tmp/python2.6-minimal_2.6.5-1ubuntu6.3_amd64.deb
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Install Python 2.6 pre-requisite
+  command: dpkg -i /tmp/python2.6_2.6.5-1ubuntu6.3_amd64.deb
+  when: ansible_distribution == 'Ubuntu'

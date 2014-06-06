@@ -1,38 +1,38 @@
 ---
 # file: roles/common/handlers/main.yml
 
-- name: restart ntp
+- name: Restart ntp
   service: name=ntp state=restarted
-
-- name: Restart Jobtracker
-  shell: maprcli node services -jobtracker restart -nodes {{jobtracker_nodes}}
 
 - name: Service pause
   pause: seconds=10
 
+- name: Restart Jobtracker
+  shell: maprcli node services -jobtracker restart -nodes {{jobtracker_array.stdout}}
+
 - name: Start Oozie
-  shell: maprcli node services -name oozie -action start -nodes {{oozie_nodes}}
+  shell: maprcli node services -name oozie -action start -nodes {{hue_node}}
 
 - name: Stop Oozie
-  shell: maprcli node services -name oozie -action stop -nodes {{oozie_nodes}}
+  shell: maprcli node services -name oozie -action stop -nodes {{hue_node}}
 
 - name: Restart Oozie
-  shell: maprcli node services -name oozie -action restart -nodes {{oozie_nodes}}
+  shell: maprcli node services -name oozie -action restart -nodes {{hue_node}}
 
 - name: Start Hue
-  shell: maprcli node services -name hue -action start -nodes {{hue_nodes}}
+  shell: maprcli node services -name hue -action start -nodes {{hue_node}}
 
 - name: Stop Hue
-  shell: maprcli node services -name hue -action stop -nodes {{hue_nodes}}
+  shell: maprcli node services -name hue -action stop -nodes {{hue_node}}
 
 - name: Restart Hue
-  shell: maprcli node services -name hue -action restart -nodes {{hue_nodes}}
+  shell: maprcli node services -name hue -action restart -nodes {{hue_node}}
 
 - name: Start Beeswax
-  shell: maprcli node services -name beeswax -action start -nodes {{beeswax_nodes}}
+  shell: maprcli node services -name beeswax -action start -nodes {{hue_node}}
 
 - name: Stop Beeswax
-  shell: maprcli node services -name beeswax -action stop -nodes {{beeswax_nodes}}
+  shell: maprcli node services -name beeswax -action stop -nodes {{hue_node}}
 
 - name: Restart Beeswax
-  shell: maprcli node services -name beeswax -action restart -nodes {{beeswax_nodes}}
+  shell: maprcli node services -name beeswax -action restart -nodes {{hue_node}}

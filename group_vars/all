@@ -1,0 +1,26 @@
+---
+# file group_vars/all
+
+# Node to install Hue, Hive, Oozie, Beeswax & Hive Metastore on
+hue_node: m7b
+
+# Network inteface for Hue web server to listen on
+hue_network_interface: eth1 
+  
+# Install MySQL on Hue host, yes or no?
+mysql_install: yes 
+   
+# MySQL root password to use for new install 
+mysql_root_password: mapr
+
+# MySQL username for the Hive metastore db 
+mysql_hive_metastore_db_username: mapr
+
+# MySQL password for the Hive metastore db user 
+mysql_hive_metastore_db_password: mapr
+
+# If you have an existing MySQL host, complete the following vars
+mysql_host:
+mysql_hive_metastore_db_name:
+mysql_user:
+mysql_password:
