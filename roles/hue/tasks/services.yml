@@ -1,0 +1,13 @@
+---
+# file: roles/common/tasks/services.yml
+
+- name: Bringing up all services
+  shell: echo " "
+  notify: 
+  - Restart Jobtracker
+  - Pause after Jobtracker
+  - Start Oozie
+  - Pause before Beeswax
+  - Start Beeswax
+  - Pause before Hue
+  - Start Hue

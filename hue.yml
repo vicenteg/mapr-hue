@@ -1,9 +1,24 @@
 ---
 # file hue.yml
+
 - hosts: all
-  vars:
-    cluster_name: my.cluster.com
-    jobtracker_nodes: m7a
   sudo: yes
   roles:
+    - common
+    - mysql
     - hue
+
+#- hosts: jobtracker_nodes
+- hosts: all
+  #gather_facts: no
+  sudo: yes
+  tasks:
+    - include: roles/hue/tasks/plugins.yml
+
+- hosts: all
+  gather_facts : no
+  sudo: yes
+  roles:
+    - common
+  tasks:
+    - include: roles/hue/tasks/services.yml

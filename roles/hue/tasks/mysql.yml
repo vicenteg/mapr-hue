@@ -1,0 +1,13 @@
+---
+# file: roles/hue/tasks/mysql.yml
+#
+- name: Create Hive metastore db
+  mysql_db: name=hive_11 state=present
+
+- name: Create Hive metastore db user
+  mysql_user: name={{mysql_hive_metastore_db_username}} password={{mysql_hive_metastore_db_password}} priv=hive_11.*:ALL state=present host=%
+
+### Install the MySQL Java connector no-one tells you about
+
+- name: Install mysql java connector
+  copy: src=mysql-connector-java-5.1.18-bin.jar dest=/opt/mapr/hive/{{hive_version.stdout}}/lib
