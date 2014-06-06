@@ -24,6 +24,7 @@
 
 - name: Setup mysql root password
   command: mysqladmin -u root password {{mysql_root_password}}
+  ignore_errors: yes
 
 - name: Install my.conf
-  template: src=my.cnf dest=~/.my.cnf
+  template: src=my.cnf.j2 dest=~/.my.cnf

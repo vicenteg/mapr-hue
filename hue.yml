@@ -5,9 +5,12 @@
   sudo: yes
   roles:
     - common
+    - mysql
     - hue
 
-- hosts: jobtracker_nodes
+#- hosts: jobtracker_nodes
+- hosts: all
+  #gather_facts: no
   sudo: yes
   tasks:
     - include: roles/hue/tasks/plugins.yml

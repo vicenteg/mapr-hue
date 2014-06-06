@@ -5,11 +5,9 @@
   shell: echo " "
   notify: 
   - Restart Jobtracker
-  - Service pause
-  - Stop Oozie
-  - Service pause
+  - Pause after Jobtracker
   - Start Oozie
-  - Service pause
-  - Start Hue
-  - Service pause
+  - Pause before Beeswax
   - Start Beeswax
+  - Pause before Hue
+  - Start Hue

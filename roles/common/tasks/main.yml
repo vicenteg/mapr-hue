@@ -4,14 +4,12 @@
 - name: Find all Jobtrackers in the cluster
   shell: maprcli node list -columns svc | grep jobtracker | awk {'print $2'}
   register: jobtrackers
-  ignore_errors: yes
 
 - debug: var=jobtrackers
 
 - name: Create an array of Jobtrackers to pass as vars
   shell: echo {{jobtrackers.stdout}} | sed ':a;N;$!ba;s/\n/ /g'
   register: jobtracker_array
-  ignore_errors: yes
 
 - debug: var=jobtracker_array
 

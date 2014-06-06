@@ -4,9 +4,6 @@
 - name: Restart ntp
   service: name=ntp state=restarted
 
-- name: Service pause
-  pause: seconds=10
-
 - name: Restart Jobtracker
   shell: maprcli node services -jobtracker restart -nodes {{jobtracker_array.stdout}}
 
@@ -36,3 +33,15 @@
 
 - name: Restart Beeswax
   shell: maprcli node services -name beeswax -action restart -nodes {{hue_node}}
+
+- name: Pause after Jobtracker
+  pause: seconds=10
+
+- name: Pause after Oozie
+  pause: seconds=10
+
+- name: Pause before Beeswax
+  pause: seconds=10
+
+- name: Pause before Hue
+  pause: seconds=10
