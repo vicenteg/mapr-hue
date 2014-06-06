@@ -7,8 +7,8 @@
 - name: Restart Jobtracker
   shell: maprcli node services -jobtracker restart -nodes {{jobtracker_nodes}}
 
-- name: Jobtracker pause
-  pause: seconds=15
+- name: Service pause
+  pause: seconds=10
 
 - name: Start Oozie
   shell: maprcli node services -name oozie -action start -nodes {{oozie_nodes}}

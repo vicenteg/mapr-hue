@@ -57,22 +57,22 @@
     regexp='^bind-address'
     line='bind-address = {{ansible_eth1.ipv4.address}}'
 
-- name: start mysql service
+- name: Start mysql service
   service: name=mysql state=restarted
 
-- name: setup mysql root password
+- name: Setup mysql root password
   command: mysqladmin -u root password mapr
 
-- name: copy my.conf
+- name: Copy my.conf
   copy: src=my.cnf dest=~/.my.cnf
 
-- name: create hive metastore db
+- name: Create Hive metastore db
   mysql_db: name=hive_11 state=present
 
-- name: create hive metastore db user
+- name: Create Hive metastore db user
   mysql_user: name=mapr password=mapr priv=hive_11.*:ALL state=present host=%
 
-- name: copy hue plugins to job trackers
+- name: Copy Hue plugins to Jobtrackers
   shell: cp /opt/mapr/hue/{{hue_version.stdout}}/desktop/libs/hadoop/java-lib/hue-plugins-*.jar /opt/mapr/hadoop/{{hadoop_version.stdout}}/lib/
 
 ###
@@ -134,8 +134,11 @@
   shell: echo "Let's get the party started"
   notify: 
   - Restart Jobtracker
-  - Jobtracker pause
+  - Service pause
   - Stop Oozie
+  - Service pause
   - Start Oozie
+  - Service pause
   - Start Hue
+  - Service pause
   - Start Beeswax
