@@ -1,6 +1,9 @@
 ---
 # file group_vars/all
 
+# Install Hue 2.5 or 3.5 
+hue_version: '2.5'
+
 # Node to install Hue, Hive, Oozie, Beeswax & Hive Metastore on
 hue_node: m7b
 

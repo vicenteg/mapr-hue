@@ -4,6 +4,16 @@
 - include: prereqs.yml
 
 - name: Install Packages
+  apt: pkg={{ item }} force=yes
+  with_items:
+    - mapr-hue=2.5.0.22919
+    - mapr-httpfs=1.0.23547
+    - mapr-hive=0.12.26066
+    - mapr-hivemetastore=0.12.26066
+    - mapr-oozie=3.3.2.23554
+  when: ansible_distribution == 'Ubuntu' and hue_version == '2.5'
+
+- name: Install Packages
   apt: pkg={{ item }} state=latest force=yes
   with_items:
     - mapr-hue
@@ -11,7 +21,8 @@
     - mapr-hive
     - mapr-hivemetastore
     - mapr-oozie
-  when: ansible_distribution == 'Ubuntu'
+  when: ansible_distribution == 'Ubuntu' and hue_version == '3.5'
+
 
 - name: Install Packages
   yum: pkg={{ item }} state=latest force=yes
@@ -29,7 +40,8 @@
 ### Install configs
 
 - name: Install hue.ini
-  template: src=hue.ini.j2 dest=/opt/mapr/hue/{{hue_version.stdout}}/desktop/conf/hue.ini 
+  template: src=hue-2.5.ini.j2 dest=/opt/mapr/hue/{{hue_version.stdout}}/desktop/conf/hue.ini 
+  when: ansible_distribution == 'Ubuntu' and hue_version = '2.5'
 
 - name: Install hive-site.xml
   template: src=hive-site.xml.j2 dest=/opt/mapr/hive/{{hive_version.stdout}}/conf/hive-site.xml 

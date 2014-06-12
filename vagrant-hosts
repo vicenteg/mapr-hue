@@ -1,4 +1,4 @@
 # file: vagrant-hosts
 
-[all]
+[nodes]
 m7b

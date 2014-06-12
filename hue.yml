@@ -1,24 +1,24 @@
 ---
 # file hue.yml
 
-- hosts: all
+- hosts: nodes
   sudo: yes
   roles:
     - common
     - mysql
     - hue
 
-#- hosts: jobtracker_nodes
-- hosts: all
-  #gather_facts: no
+- hosts: jobtracker_nodes
+#- hosts: all
+  gather_facts: no
   sudo: yes
   tasks:
     - include: roles/hue/tasks/plugins.yml
 
-- hosts: all
+- hosts: nodes
   gather_facts : no
   sudo: yes
   roles:
     - common
   tasks:
-    - include: roles/hue/tasks/services.yml
+   - include: roles/hue/tasks/services.yml
