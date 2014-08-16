@@ -6,7 +6,7 @@
   when: ansible_distribution == 'Ubuntu'
 
 - name: Install Packages
-  apt: pkg={{ item }} state=latest
+  apt: pkg={{ item }} state=present
   with_items:
     - python-pycurl
     - python-mysqldb
@@ -16,6 +16,12 @@
     - libxslt1.1
     - libsasl2-modules-gssapi-mit
   when: ansible_distribution == 'Ubuntu'
+
+- name: install prereq packages for RH/CentOS
+  yum: name={{item}} state=present
+  with_items:
+    - MySQL-python
+  when: ansible_distribution in ("RedHat", "CentOS")
 
 - name: Update all packages to the latest version
   apt: update_cache=yes 

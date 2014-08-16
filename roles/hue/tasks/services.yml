@@ -7,7 +7,7 @@
   - Restart Jobtracker
   - Pause after Jobtracker
   - Start Oozie
-  - Pause before Beeswax
-  - Start Beeswax
+  #- Pause before Beeswax
+  #- Start Beeswax
   - Pause before Hue
   - Start Hue

@@ -3,60 +3,36 @@
 
 - include: prereqs.yml
 
-- name: Install mapr-hue
-  command: apt-get install mapr-hue=2.5* creates=/opt/mapr/hue/hue-2.5.0
-  when: ansible_distribution == 'Ubuntu' and hue_version == '2.5'
+- name: install hive
+  apt: pkg={{item}} state=present
+  with_items:
+    - mapr-hive
+  when: ansible_distribution == 'Ubuntu' and hue_version == '3.5'
+  register: mapr_hive
 
-#- name: Install mapr-httpfs
-#  command: apt-get install mapr-httpfs=1.0* creates=/opt/mapr/httpfs-1.0
-#  when: ansible_distribution == 'Ubuntu' and hue_version == '2.5'
-
-- name: Install mapr-hive
-  command: apt-get install mapr-hive=0.12* creates=/opt/mapr/hive-0.12
-  when: ansible_distribution == 'Ubuntu' and hue_version == '2.5'
-
-- name: Install mapr-hivemetastore
-  command: apt-get install mapr-hivemetastore=0.12* creates=/opt/mapr/roles/hivemetastore
-  when: ansible_distribution == 'Ubuntu' and hue_version == '2.5'
-
-- name: Install mapr-oozie
-  command: apt-get install mapr-oozie=3* creates=/opt/mapr/oozie/oozie-3*
-  when: ansible_distribution == 'Ubuntu' and hue_version == '2.5'
-
-
-#- name: Install Packages
-#  apt: pkg={{ item }} force=yes
-#  with_items:
-#    - mapr-hue=2.5.0.22919
-#    - mapr-httpfs=1.0.23547
-#    - mapr-hive=0.12.26066
-#    - mapr-hivemetastore=0.12.26066
-#    - mapr-oozie=3.3.2.23554
-#  when: ansible_distribution == 'Ubuntu' and hue_version == '2.5'
+- name: install hivemetastore
+  apt: pkg={{item}} state=present
+  with_items:
+    - mapr-hivemetastore
+  when: ansible_distribution == 'Ubuntu' and hue_version == '3.5'
+  register: mapr_hivemetastore
 
 - name: Install Packages
-  apt: pkg={{ item }} state=latest force=yes
+  apt: pkg={{ item }} state=present 
   with_items:
     - mapr-hue
-    - mapr-httpfs
-    - mapr-hive
-    - mapr-hivemetastore
-    - mapr-oozie
   when: ansible_distribution == 'Ubuntu' and hue_version == '3.5'
 
-
 - name: Install Packages
-  yum: pkg={{ item }} state=latest force=yes
+  yum: pkg={{ item }} state=present 
   with_items:
     - mapr-hue
-    - mapr-httpfs
     - mapr-hive
     - mapr-hivemetastore
-    - mapr-oozie
   when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
 
 - include: check_versions.yml
-- include: mysql.yml
+#- include: mysql.yml
 
 ### Install configs
 
@@ -64,37 +40,12 @@
   template: src=hue-2.5.ini.j2 dest=/opt/mapr/hue/{{hue_version.stdout}}/desktop/conf/hue.ini 
   when: ansible_distribution == 'Ubuntu' and hue_version == '2.5'
 
-- name: Install hive-site.xml
+- name: install hive-site.xml if we just installed hive
   template: src=hive-site.xml.j2 dest=/opt/mapr/hive/{{hive_version.stdout}}/conf/hive-site.xml 
+  when: mapr_hive.changed
 
 - name: Install mapred-site.xml
   copy: src=mapred-site.xml dest=/opt/mapr/hadoop/{{hadoop_version.stdout}}/conf/mapred-site.xml 
 
 - name: Install core-site.xml
   copy: src=core-site.xml dest=/opt/mapr/hadoop/{{hadoop_version.stdout}}/conf/core-site.xml 
-
-- name: Install oozie-site.xml
-  copy: src=oozie-site.xml dest=/opt/mapr/oozie/{{oozie_version.stdout}}/oozie-site.xml 
-
-- name: Install httpfs-site.xml
-  copy: src=httpfs-site.xml dest=/opt/mapr/httpfs/{{httpfs_version.stdout}}/etc/hadoop/httpfs-site.xml
-
-### Install Oozie files
-
-- name: Create Oozie shared lib directory
-  shell: hadoop fs -mkdir /oozie/share/lib
-
-- name: Decompress Oozie examples
-  shell: tar zxf /opt/mapr/oozie/oozie*/oozie-examples.tar.gz -C /opt/mapr/oozie/oozie*/
-
-- name: Decompress Oozie shared libs
-  shell: tar zxf /opt/mapr/oozie/oozie*/oozie-sharelib*.tar.gz -C /opt/mapr/oozie/oozie*/
-
-- name: Move Oozie examples into place
-  shell: hadoop fs -put /opt/mapr/oozie/{{oozie_version.stdout}}/examples/* /oozie/share/lib
-
-- name: Move Oozie sharelib into place
-  shell: hadoop fs -put /opt/mapr/oozie/{{oozie_version.stdout}}/share/lib/* /oozie/share/lib
-
-- name: Set Oozie file permissions
-  shell: hadoop fs -chmod -R 777 /oozie

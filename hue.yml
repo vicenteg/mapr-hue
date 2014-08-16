@@ -1,21 +1,26 @@
 ---
 # file hue.yml
 
-- hosts: nodes
+- hosts: hiveserver
   sudo: yes
   roles:
     - common
-    - mysql
+    - mapr-httpfs
+    - mapr-oozie
+
+- hosts: hiveserver;jobtracker
+  sudo: yes
+  roles:
     - hue
 
-- hosts: jobtracker_nodes
+- hosts: jobtracker
 #- hosts: all
   gather_facts: no
   sudo: yes
   tasks:
     - include: roles/hue/tasks/plugins.yml
 
-- hosts: nodes
+- hosts: cluster
   gather_facts : no
   sudo: yes
   roles:

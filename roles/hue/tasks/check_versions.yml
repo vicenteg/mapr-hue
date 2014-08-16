@@ -2,20 +2,12 @@
 # file: roles/common/tasks/check_versions.yml
 
 - name: Check and register Hue version
-  action: shell ls /opt/mapr/hue | grep hue- | sort | tail -n1
+  shell: ls /opt/mapr/hue | grep hue- | sort | tail -n1
   register: hue_version
-
-- name: Check and register httpfs version
-  shell: ls /opt/mapr/httpfs | grep httpfs- | sort | tail -n1
-  register: httpfs_version
 
 - name: Check and register Hive version
   shell: ls /opt/mapr/hive | grep hive- | sort | tail -n1
   register: hive_version
-
-- name: Check and register Oozie version
-  shell: ls /opt/mapr/oozie | grep oozie- | sort | tail -n1
-  register: oozie_version
 
 - name: Check and register hadoop version
   shell: ls /opt/mapr/hadoop | grep hadoop- | sort | tail -n1
