@@ -1,8 +1,12 @@
 ---
 # file: roles/common/tasks/main.yml
 
+- name: get cluster name
+  shell: head -1 /opt/mapr/conf/mapr-clusters.conf | awk '{print $1}'
+  register: cluster_name
+
 - name: Find all Jobtrackers in the cluster
-  shell: maprcli node list -columns svc | grep jobtracker | awk {'print $2'}
+  shell: maprcli node list -columns csvc | grep jobtracker | awk {'print $1'}
   register: jobtrackers
 
 - debug: var=jobtrackers

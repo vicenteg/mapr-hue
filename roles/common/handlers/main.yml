@@ -8,31 +8,31 @@
   shell: maprcli node services -jobtracker restart -nodes {{jobtracker_array.stdout}}
 
 - name: Start Oozie
-  shell: maprcli node services -name oozie -action start -nodes {{hue_node}}
+  shell: maprcli node services -name oozie -action start -filter csvc==oozie
 
 - name: Stop Oozie
-  shell: maprcli node services -name oozie -action stop -nodes {{hue_node}}
+  shell: maprcli node services -name oozie -action stop -filter csvc==oozie
 
 - name: Restart Oozie
-  shell: maprcli node services -name oozie -action restart -nodes {{hue_node}}
+  shell: maprcli node services -name oozie -action restart -filter csvc==oozie
 
 - name: Start Hue
-  shell: maprcli node services -name hue -action start -nodes {{hue_node}}
+  shell: maprcli node services -name hue -action start -filter csvc==hue
 
 - name: Stop Hue
-  shell: maprcli node services -name hue -action stop -nodes {{hue_node}}
+  shell: maprcli node services -name hue -action stop -filter csvc==hue
 
 - name: Restart Hue
-  shell: maprcli node services -name hue -action restart -nodes {{hue_node}}
+  shell: maprcli node services -name hue -action restart -filter csvc==hue
 
-- name: Start Beeswax
-  shell: maprcli node services -name beeswax -action start -nodes {{hue_node}}
+#- name: Start Beeswax
+#  shell: maprcli node services -name beeswax -action start -filter csvc==beeswax
 
-- name: Stop Beeswax
-  shell: maprcli node services -name beeswax -action stop -nodes {{hue_node}}
+#- name: Stop Beeswax
+#  shell: maprcli node services -name beeswax -action stop -filter csvc==beeswax
 
-- name: Restart Beeswax
-  shell: maprcli node services -name beeswax -action restart -nodes {{hue_node}}
+#- name: Restart Beeswax
+#  shell: maprcli node services -name beeswax -action restart -filter csvc==beeswax
 
 - name: Pause after Jobtracker
   pause: seconds=10
