@@ -8,23 +8,28 @@
   when: ansible_distribution == 'Ubuntu'
 
 - name: Install Packages
-  yum: pkg={{ item }} state=latest force=yes
+  yum: pkg={{ item }} state=present 
   with_items:
     - mysql-server
   when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
 
-- name: configure mysql.conf
-  lineinfile: dest=/etc/mysql/my.cnf
-    state=present
-    regexp='^bind-address'
-    line='bind-address = {{ansible_eth1.ipv4.address}}'
+#- name: configure mysql.conf
+#  lineinfile: dest=/etc/mysql/my.cnf
+#    state=present
+#    regexp='^bind-address'
+#    line='bind-address = {{ansible_eth1.ipv4.address}}'
 
 - name: Start mysql service
   service: name=mysql state=restarted
+  when: ansible_distribution == 'Ubuntu'
 
-- name: Setup mysql root password
-  command: mysqladmin -u root password {{mysql_root_password}}
-  ignore_errors: yes
+- name: start mysqld 
+  service: name=mysqld state=restarted
+  when: ansible_distribution in ('CentOS', 'RedHat')
 
-- name: Install my.conf
-  template: src=my.cnf.j2 dest=~/.my.cnf
+#- name: Setup mysql root password
+#  command: mysqladmin -u root password {{mysql_root_password}}
+#  ignore_errors: yes
+
+#- name: Install my.conf
+#  template: src=my.cnf.j2 dest=~/.my.cnf

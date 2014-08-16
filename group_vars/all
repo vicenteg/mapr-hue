@@ -23,7 +23,7 @@ mysql_hive_metastore_db_username: mapr
 mysql_hive_metastore_db_password: mapr
 
 # If you have an existing MySQL host, complete the following vars
-mysql_host:
-mysql_hive_metastore_db_name:
-mysql_user:
-mysql_password:
+mysql_host: 172.16.2.122
+mysql_hive_metastore_db_name: metastore
+mysql_user: hive
+mysql_password: mapr

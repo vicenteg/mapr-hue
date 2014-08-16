@@ -1,0 +1,55 @@
+---
+# tasks file for oozie
+- name: install oozie (Ubuntu)
+  apt: pkg={{ item }} state=present
+  with_items:
+    - mapr-oozie
+  when: ansible_distribution == 'Ubuntu' 
+  notify: reconfigure roles
+
+- name: install oozie (RedHat)
+  yum: pkg={{ item }} state=present
+  with_items:
+    - mapr-oozie
+  when: ansible_distribution == 'CentOS'
+  notify: reconfigure roles
+
+- name: Check and register Oozie version
+  shell: ls /opt/mapr/oozie | grep oozie- | sort | tail -n1
+  register: oozie_version
+
+- name: Install oozie-site.xml
+  copy: src=oozie-site.xml dest=/opt/mapr/oozie/{{oozie_version.stdout}}/oozie-site.xml 
+  notify: reconfigure roles
+
+### Install Oozie files
+
+- name: make the oozie share lib directory
+  file: state=directory path="/mapr/{{cluster_name.stdout}}/oozie/share/lib" mode=0755 owner=mapr group=mapr
+  notify: reconfigure roles
+
+#- name: check for shared lib directory
+#  shell: hadoop fs -test -d /oozie/share/lib
+#  ignore_errors: true
+#  register: share_lib_exists
+
+#- name: Create Oozie shared lib directory
+#  shell: hadoop fs -mkdir /oozie/share/lib
+#  when: share_lib_exists.rc == 1
+
+- name: Decompress Oozie examples
+  shell: tar zxf /opt/mapr/oozie/{{oozie_version.stdout}}/oozie-examples.tar.gz -C /mapr/{{cluster_name.stdout}}/oozie/share/lib
+  notify: reconfigure roles
+
+- name: Decompress Oozie shared libs
+  shell: tar zxf /opt/mapr/oozie/{{oozie_version.stdout}}/oozie-sharelib*.tar.gz -C /mapr/{{cluster_name.stdout}}/oozie/share/lib
+  notify: reconfigure roles
+
+#- name: Move Oozie examples into place
+#  shell: hadoop fs -put /opt/mapr/oozie/{{oozie_version.stdout}}/examples/* /oozie/share/lib
+
+#- name: Move Oozie sharelib into place
+#  shell: hadoop fs -put /opt/mapr/oozie/{{oozie_version.stdout}}/share/lib/* /oozie/share/lib
+
+#- name: Set Oozie file permissions
+#  shell: hadoop fs -chmod -R 777 /oozie
