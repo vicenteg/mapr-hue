@@ -1,3 +1,0 @@
----
-# file site.yml
-- include: single_node.yml

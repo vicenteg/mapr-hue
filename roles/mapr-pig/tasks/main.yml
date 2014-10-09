@@ -1,0 +1,6 @@
+---
+# tasks file for mapr-pig
+
+- name: install mapr-pig
+  yum: name=mapr-pig state=present
+  when: ansible_distribution in ('CentOS', 'RedHat', 'Amazon')

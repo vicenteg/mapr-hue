@@ -5,18 +5,55 @@
   shell: head -1 /opt/mapr/conf/mapr-clusters.conf | awk '{print $1}'
   register: cluster_name
 
-- name: Find all Jobtrackers in the cluster
-  shell: maprcli node list -columns csvc | grep jobtracker | awk {'print $1'}
-  register: jobtrackers
+- name: get hadoop1 versions
+  shell: ls -d /opt/mapr/hadoop/* | grep hadoop-0 | sort | tail -n1
+  register: hadoop1_path
+  failed_when: hadoop1_path.rc != 0
 
-- debug: var=jobtrackers
+- name: get hadoop2 versions
+  shell: ls -d /opt/mapr/hadoop/* | grep hadoop-2 | sort | tail -n1
+  register: hadoop2_path
+  failed_when: hadoop2_path.rc != 0
 
-- name: Create an array of Jobtrackers to pass as vars
-  shell: echo {{jobtrackers.stdout}} | sed ':a;N;$!ba;s/\n/ /g'
-  register: jobtracker_array
+- name: register the active jobtracker
+  shell: maprcli node list -filter svc==jobtracker  -columns hostname -noheader | awk '{print $1}'
+  register: active_jobtracker
 
-- debug: var=jobtracker_array
+- name: register the resourcemanager
+  shell: maprcli node list -filter svc==resourcemanager -columns hostname -noheader | head -1 | awk '{print $1}'
+  register: resourcemanager
+ 
+- name: register hiveserver2
+  shell: maprcli node list -filter svc==hs2 -columns hostname -noheader | awk '{print $1}'
+  register: hiveserver2
 
-- name: Create Jobtracker host group
-  local_action: add_host hostname={{item}} groupname=jobtracker_nodes
-  with_items: "jobtrackers.stdout"
+- name: register one impalad
+  shell: maprcli node list -filter svc==impalaserver -columns hostname -noheader | head -1 | awk '{print $1}'
+  register: impalaserver
+
+- name: register zookeeper ensemble
+  shell: maprcli node listzookeepers -noheader
+  register: zookeeper_list
+
+- name: add some mapr facts
+  set_fact:
+    mapr_cluster_name: '{{cluster_name.stdout}}'
+    mapr_hadoop1_path: '{{hadoop1_path.stdout}}'
+    mapr_hadoop2_path: '{{hadoop2_path.stdout}}'
+    mapr_active_jobtracker: '{{active_jobtracker.stdout}}'
+    mapr_resourcemanager: '{{resourcemanager.stdout}}'
+    mapr_hiveserver2: '{{hiveserver2.stdout}}'
+    mapr_impalaserver: '{{impalaserver.stdout}}'
+    mapr_zookeepers: '{{zookeeper_list.stdout}}'
+
+- name: debug
+  debug: msg={{item}}
+  with_items:
+    - '{{mapr_cluster_name}}'
+    - '{{mapr_hadoop1_path}}'
+    - '{{mapr_hadoop2_path}}'
+    - '{{mapr_active_jobtracker}}'
+    - '{{mapr_impalaserver}}'
+    - '{{mapr_zookeepers}}'
+    - '{{mapr_hiveserver2}}'
+    - '{{mapr_resourcemanager}}'

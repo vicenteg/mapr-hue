@@ -3,49 +3,35 @@
 
 - include: prereqs.yml
 
-- name: install hive
-  apt: pkg={{item}} state=present
-  with_items:
-    - mapr-hive
-  when: ansible_distribution == 'Ubuntu' and hue_version == '3.5'
-  register: mapr_hive
-
-- name: install hivemetastore
-  apt: pkg={{item}} state=present
-  with_items:
-    - mapr-hivemetastore
-  when: ansible_distribution == 'Ubuntu' and hue_version == '3.5'
-  register: mapr_hivemetastore
-
 - name: Install Packages
   apt: pkg={{ item }} state=present 
   with_items:
     - mapr-hue
-  when: ansible_distribution == 'Ubuntu' and hue_version == '3.5'
+  when: ansible_distribution == 'Ubuntu'
 
 - name: Install Packages
   yum: pkg={{ item }} state=present 
   with_items:
     - mapr-hue
-    - mapr-hive
-    - mapr-hivemetastore
-  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+  when: ansible_distribution in ('CentOS', 'Red Hat Enterprise Linux', 'Amazon')
 
-- include: check_versions.yml
-#- include: mysql.yml
+- name: register the hue path
+  shell: ls -d /opt/mapr/hue/hue-* | tail -1
+  register: hue_path
+  failed_when: hue_path.rc != 0
 
-### Install configs
+- name: set a fact about the hue_path
+  set_fact:
+    mapr_hue_path: '{{hue_path.stdout}}'
 
-- name: Install hue.ini
-  template: src=hue-2.5.ini.j2 dest=/opt/mapr/hue/{{hue_version.stdout}}/desktop/conf/hue.ini 
-  when: ansible_distribution == 'Ubuntu' and hue_version == '2.5'
+- name: generate hue_secret_key from /dev/urandom
+  shell: dd if=/dev/urandom count=1024 | sha512sum | awk '{ print $1}'
+  register: hue_secret_key
 
-- name: install hive-site.xml if we just installed hive
-  template: src=hive-site.xml.j2 dest=/opt/mapr/hive/{{hive_version.stdout}}/conf/hive-site.xml 
-  when: mapr_hive.changed
+- name: install hue.ini
+  template: src=hue-3.6.ini.j2 dest=/opt/mapr/hue/hue-3.6.0/desktop/conf/hue.ini mode=0644 owner=mapr group=mapr backup=yes
 
-- name: Install mapred-site.xml
-  copy: src=mapred-site.xml dest=/opt/mapr/hadoop/{{hadoop_version.stdout}}/conf/mapred-site.xml 
-
-- name: Install core-site.xml
-  copy: src=core-site.xml dest=/opt/mapr/hadoop/{{hadoop_version.stdout}}/conf/core-site.xml 
+- name: fetch the hue plugins
+  sudo: no
+  fetch: src={{mapr_hue_path}}/desktop/libs/hadoop/java-lib/hue-plugins-3.6.0-mapr.jar dest=/tmp flat=true validate_md5=false
+  register: fetch

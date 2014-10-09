@@ -1,18 +1,8 @@
 ---
 # file group_vars/all
-
-# Install Hue 2.5 or 3.5 
-hue_version: '2.5'
-
-# Node to install Hue, Hive, Oozie, Beeswax & Hive Metastore on
-hue_node: m7b
-
 # Network inteface for Hue web server to listen on
 hue_network_interface: eth1 
   
-# Install MySQL on Hue host, yes or no?
-mysql_install: yes 
-   
 # MySQL root password to use for new install 
 mysql_root_password: mapr
 

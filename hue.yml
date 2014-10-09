@@ -1,29 +1,35 @@
 ---
 # file hue.yml
 
-- hosts: hiveserver
-  sudo: yes
+- hosts: hue;jobtracker
   roles:
     - common
+    - python-lxml
+
+- hosts: hue
+  roles:
     - mapr-httpfs
     - mapr-oozie
-
-- hosts: hiveserver;jobtracker
-  sudo: yes
-  roles:
+    - mapr-pig
     - hue
 
 - hosts: jobtracker
-#- hosts: all
-  gather_facts: no
-  sudo: yes
-  tasks:
-    - include: roles/hue/tasks/plugins.yml
-
-- hosts: cluster
-  gather_facts : no
-  sudo: yes
   roles:
-    - common
+    - jobtracker-plugin
   tasks:
-   - include: roles/hue/tasks/services.yml
+    - name: Copy Hue plugins to Jobtrackers
+      copy: src=/tmp/hue-plugins-3.6.0-mapr.jar dest="{{mapr_hadoop1_path}}/lib"
+
+#- hosts: cluster
+#  gather_facts : no
+#  tasks:
+#    - name: Bringing up all services
+#      shell: echo " "
+#      notify: 
+#        - Restart Jobtracker
+#        - Pause after Jobtracker
+#        - Start Oozie
+#        #- Pause before Beeswax
+#        #- Start Beeswax
+#        - Pause before Hue
+#        - Start Hue

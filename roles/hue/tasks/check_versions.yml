@@ -9,6 +9,10 @@
   shell: ls /opt/mapr/hive | grep hive- | sort | tail -n1
   register: hive_version
 
-- name: Check and register hadoop version
-  shell: ls /opt/mapr/hadoop | grep hadoop- | sort | tail -n1
-  register: hadoop_version
+- name: Check and register hadoop1 version
+  shell: ls -d /opt/mapr/hadoop-0* | grep hadoop- | sort | tail -n1
+  register: hadoop1_version
+
+- name: Check and register hadoop2 version
+  shell: ls -d /opt/mapr/hadoop-2* | grep hadoop- | sort | tail -n1
+  register: hadoop2_version

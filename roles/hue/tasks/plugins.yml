@@ -1,7 +1,5 @@
 ---
 # file: roles/hue/tasks/plugins.yml
 
-- include: check_versions.yml
-
 - name: Install Hue plugins to Jobtrackers
-  shell: cp /opt/mapr/hue/{{hue_version.stdout}}/desktop/libs/hadoop/java-lib/hue-plugins-*.jar /opt/mapr/hadoop/{{hadoop_version.stdout}}/lib/
+  shell: cp /opt/mapr/hue/{{hue_version.stdout}}/desktop/libs/hadoop/java-lib/hue-plugins-*.jar {{mapr_hadoop1_path}}/lib/

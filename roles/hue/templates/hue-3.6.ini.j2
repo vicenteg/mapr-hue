@@ -1,17 +1,13 @@
-#####################################
-# DEVELOPMENT EDITION
-#####################################
-
 # Hue configuration file
 # ===================================
 #
 # For complete documentation about the contents of this file, run
-#       $ <hue_root>/build/env/bin/hue config_help
+#   $ <hue_root>/build/env/bin/hue config_help
 #
 # All .ini files under the current directory are treated equally.  Their
 # contents are merged to form the Hue configuration, which can
 # can be viewed on the Hue at
-#       http://<hue_host>:<port>/dump_config
+#   http://<hue_host>:<port>/dump_config
 
 
 ###########################################################################
@@ -27,7 +23,7 @@
 
   # Set this to a random string, the longer the better.
   # This is used for secure hashing in the session store.
-  secret_key=asdf0w993q02495uperw9poijsdfqweoriu23o4iuoweifjlkasdjfwiqeru034590345098
+  secret_key={{hue_secret_key.stdout}}
 
   # Webserver listens on this address and port
   http_host=0.0.0.0
@@ -41,6 +37,9 @@
 
   # Enable or disable backtrace for server error
   http_500_debug_mode=true
+
+  # Enable or disable memory profiling.
+  ## memory_profiler=false
 
   # Server email for internal error messages
   ## django_server_email='hue@localhost.localdomain'
@@ -84,19 +83,22 @@
   # Help improve Hue with anonymous usage analytics.
   # Use Google Analytics to see how many times an application or specific section of an application is used, nothing more.
   ## collect_usage=true
+  
+  # Support for HTTPS termination at the load-balancer level with SECURE_PROXY_SSL_HEADER.
+  ## secure_proxy_ssl_header=false
 
   # Comma-separated list of Django middleware classes to use.
   # See https://docs.djangoproject.com/en/1.4/ref/middleware/ for more details on middlewares in Django.
   ## middleware=desktop.auth.backend.LdapSynchronizationBackend
 
-  ## Comma-separated list of regular expressions, which match the redirect URL.
-  ## For example, to restrict to your local domain and FQDN, the following value can be used:
-  ##   ^\/.*$,^http:\/\/www.mydomain.com\/.*$
-  # redirect_whitelist=
+  # Comma-separated list of regular expressions, which match the redirect URL.
+  # For example, to restrict to your local domain and FQDN, the following value can be used:
+  # ^\/.*$,^http:\/\/www.mydomain.com\/.*$
+  ## redirect_whitelist=
 
   # Comma separated list of apps to not load at server startup.
   # e.g.: pig,zookeeper
-  app_blacklist=spark,zookeeper,search,impala
+  app_blacklist=spark,search,zookeeper
 
   # The directory where to store the auditing logs. Auditing is disable if the value is empty.
   # e.g. /var/log/hue/audit.log
@@ -116,8 +118,9 @@
   # -------------------
   [[custom]]
 
-  # Top banner HTML code
-  ## banner_top_html=
+    # Top banner HTML code
+    # e.g. <H2>Test Lab A2 Hue Services</H2>
+    ## banner_top_html=
 
   # Configuration options for user authentication into the web application
   # ------------------------------------------------------------------------
@@ -135,7 +138,7 @@
     # - libsaml.backend.SAML2Backend
     # - libopenid.backend.OpenIDBackend
     # - liboauth.backend.OAuthBackend
-    #     (New oauth, support Twitter, Facebook, Google+ and Linkedin
+    #     (Support Twitter, Facebook, Google+ and Linkedin
     ## backend=desktop.auth.backend.AllowFirstUserDjangoBackend
 
     # The service to use when querying PAM.
@@ -151,6 +154,9 @@
     # Defaults to HTTP_REMOTE_USER
     ## remote_user_header=HTTP_REMOTE_USER
 
+    # Synchronize a users groups when they login
+    ## sync_groups_on_login=false
+
     # Ignore the case of usernames when searching for existing users.
     # Only supported in remoteUserDjangoBackend.
     ## ignore_username_case=false
@@ -159,18 +165,19 @@
     # Only supported in remoteUserDjangoBackend.
     ## force_username_lowercase=false
 
+    # Users will expire after they have not logged in for 'n' amount of seconds.
+    # A negative number means that users will never expire.
+    ## expires_after=-1
+
+    # Apply 'expires_after' to superusers.
+    ## expire_superusers=true
+
   # Configuration options for connecting to LDAP and Active Directory
   # -------------------------------------------------------------------
   [[ldap]]
 
     # The search base for finding users and groups
     ## base_dn="DC=mycompany,DC=com"
-
-    # The NT domain to connect to (only for use with Active Directory). If specified, 
-    # the User Name Principal (UPN) is used to perform a direct bind. Hue forms the UPN
-    # by concatenating the short name provided at login and the nt_domain like: <short_name>@<nt_domain>
-    # If used, the 'ldap_username_pattern' config is completely ignored. 
-    ## nt_domain=mycompany.com
 
     # URL of the LDAP server
     ## ldap_url=ldap://auth.mycompany.com
@@ -191,7 +198,7 @@
     # anonymous searches
     ## bind_password=
 
-    # Pattern for searching for ldap usernames
+    # Pattern for searching for usernames -- Use <username> for the parameter
     # For use when using LdapBackend for Hue authentication
     # If nt_domain is specified, this config is completely ignored. 
     # If nt_domain is not specified, this should take on the form "cn=<username>,dc=example,dc=com", 
@@ -203,13 +210,9 @@
     # For use when using LdapBackend for Hue authentication
     ## create_users_on_login = true
 
-    # Synchronize a users groups when they login
-    ## sync_groups_on_login=false
-
     # Ignore the case of usernames when searching for existing users in Hue.
     ## ignore_username_case=false
 
-    # Force usernames to lowercase when creating new users from LDAP.
     # Ignore the case of usernames when searching for existing users to authenticate with.
     # Only supported in remoteUserDjangoBackend.
     ## force_username_lowercase=false
@@ -223,6 +226,12 @@
     # (not bind_dn and bind_password specified in hue.ini). There are 2 modes here - 'nt_domain' is specified or not.  
     ## search_bind_authentication=true
 
+    # Choose which kind of subgrouping to use: nested or suboordinate (deprecated).
+    ## subgroups=suboordinate
+
+    # Define the number of levels to search for nested members.
+    ## nested_members_search_depth=10
+
     [[[users]]]
 
       # Base filter for searching for users
@@ -231,7 +240,7 @@
       # The username attribute in the LDAP schema
       ## user_name_attr=sAMAccountName
 
-      [[[groups]]]
+    [[[groups]]]
 
       # Base filter for searching for groups
       ## group_filter="objectclass=*"
@@ -241,6 +250,52 @@
 
       # The attribute of the group object which identifies the members of the group
       ## group_member_attr=members
+    
+    [[[ldap_servers]]]
+
+      ## [[[[mycompany]]]]
+
+        # The search base for finding users and groups
+        ## base_dn="DC=mycompany,DC=com"
+
+        # URL of the LDAP server
+        ## ldap_url=ldap://auth.mycompany.com
+
+        # A PEM-format file containing certificates for the CA's that
+        # Hue will trust for authentication over TLS.
+        # The certificate for the CA that signed the
+        # LDAP server certificate must be included among these certificates.
+        # See more here http://www.openldap.org/doc/admin24/tls.html.
+        ## ldap_cert=
+        ## use_start_tls=true
+
+        # Distinguished name of the user to bind as -- not necessary if the LDAP server
+        # supports anonymous searches
+        ## bind_dn="CN=ServiceAccount,DC=mycompany,DC=com"
+
+        # Password of the bind user -- not necessary if the LDAP server supports
+        # anonymous searches
+        ## bind_password=
+
+        # Pattern for searching for usernames -- Use <username> for the parameter
+        # For use when using LdapBackend for Hue authentication
+        ## ldap_username_pattern="uid=<username>,ou=People,dc=mycompany,dc=com"
+
+        ## [[[[[users]]]]]
+
+          # Base filter for searching for users
+          ## user_filter="objectclass=Person"
+
+          # The username attribute in the LDAP schema
+          ## user_name_attr=sAMAccountName
+
+        ## [[[[[groups]]]]]
+
+          # Base filter for searching for groups
+          ## group_filter="objectclass=groupOfNames"
+
+          # The username attribute in the LDAP schema
+          ## group_name_attr=cn
 
   # Configuration options for specifying the Desktop Database.  For more info,
   # see http://docs.djangoproject.com/en/1.1/ref/settings/#database-engine
@@ -307,7 +362,7 @@
     ## kinit_path=/path/to/kinit
 
 
-  # Configuration options for using OAuthBackend (Core) login
+  # Configuration options for using OAuthBackend (core) login
   # ------------------------------------------------------------------------
   [[oauth]]
     # The Consumer key of the application
@@ -367,7 +422,7 @@
   # Have Hue initiated logout requests be signed and provide a certificate.
   ## logout_requests_signed=false
 
-  # Username can be sourced from 'attributes' or 'nameid'.
+  ## Username can be sourced from 'attributes' or 'nameid'.
   ## username_source=attributes
 
   # Performs the logout or not.
@@ -379,7 +434,7 @@
 ###########################################################################
 
 [libopenid]
-  # (Required) OpenId SSO endpoint url.
+  # (Required) OpenId SSO endpoint url. 
   ## server_endpoint_url=https://www.google.com/accounts/o8/id
 
   # OpenId 1.1 identity url prefix to be used instead of SSO endpoint url
@@ -398,8 +453,8 @@
 ###########################################################################
 
 [liboauth]
-  # NOTE:
-  # To work, each of the active (i.e. uncommented) service must have
+  # NOTE: 
+  # To work, each of the active (i.e. uncommented) service must have 
   # applications created on the social network.
   # Then the "consumer key" and "consumer secret" must be provided here.
   #
@@ -414,17 +469,17 @@
   # Google+ : CONSENT SCREEN must have email address
   # Facebook: Sandbox Mode must be DISABLED
   # Linkedin: "In OAuth User Agreement", r_emailaddress is REQUIRED
-
+  
   # The Consumer key of the application
-  ## consumer_key_twitter=
-  ## consumer_key_google=
-  ## consumer_key_facebook=
+  ## consumer_key_twitter=              
+  ## consumer_key_google=               
+  ## consumer_key_facebook=             
   ## consumer_key_linkedin=
 
   # The Consumer secret of the application
-  ## consumer_secret_twitter=
-  ## consumer_secret_google=
-  ## consumer_secret_facebook=
+  ## consumer_secret_twitter=           
+  ## consumer_secret_google=            
+  ## consumer_secret_facebook=          
   ## consumer_secret_linkedin=
 
   # The Request token URL
@@ -445,6 +500,14 @@
   ## authenticate_url_facebook=https://graph.facebook.com/me?access_token=
   ## authenticate_url_linkedin=https://api.linkedin.com/v1/people/~:(email-address)?format=json&oauth2_access_token=
 
+  # Username Map. Json Hash format.
+  # Replaces username parts in order to simplify usernames obtained
+  # Example: {"@sub1.domain.com":"_S1", "@sub2.domain.com":"_S2"}
+  # converts 'email@sub1.domain.com' to 'email_S1'
+  ## username_map={}
+
+  # Whitelisted domains (only applies to Google OAuth). CSV format.
+  ## whitelisted_domains_google=
 
 ###########################################################################
 # Settings for the RDBMS application
@@ -462,7 +525,7 @@
       ## nice_name=SQLite
 
       # For SQLite, name defines the path to the database.
-      ## name=/tmp/sqlite.db
+      ## name=/opt/mapr/hue/hue-3.6.0/desktop/desktop.db
 
       # Database backend to use.
       ## engine=sqlite
@@ -526,46 +589,22 @@
       # Change this if your HDFS cluster is Kerberos-secured
       ## security_enabled=false
 
-      # Settings about this HDFS cluster. If you install HDFS in a
-      # different location, you need to set the following.
-
-      # Defaults to $HADOOP_HDFS_HOME or /usr/lib/hadoop-hdfs
-      hadoop_hdfs_home=/opt/mapr/hadoop/hadoop-0.20.2/lib/
-
-      # Defaults to $HADOOP_BIN or /usr/bin/hadoop
-      hadoop_bin=/opt/mapr/hadoop/hadoop-0.20.2/bin/hadoop
-
-      # Defaults to $HADOOP_CONF_DIR or /etc/hadoop/conf
-      hadoop_conf_dir=/opt/mapr/hadoop/hadoop-0.20.2/conf
-
   # Configuration for YARN (MR2)
   # ------------------------------------------------------------------------
   [[yarn_clusters]]
 
     [[[default]]]
       # Enter the host on which you are running the ResourceManager
-      ## resourcemanager_host=localhost
+      resourcemanager_host={{mapr_resourcemanager}}
 
       # The port where the ResourceManager IPC listens on
       ## resourcemanager_port=8032
 
       # Whether to submit jobs to this cluster
-      ## submit_to=True
+      submit_to=False
 
       # Change this if your YARN cluster is Kerberos-secured
       ## security_enabled=false
-
-      # Settings about this MR2 cluster. If you install MR2 in a
-      # different location, you need to set the following.
-
-      # Defaults to $HADOOP_MR2_HOME or /usr/lib/hadoop-mapreduce
-      ## hadoop_mapred_home=/usr/lib/hadoop-mapreduce
-
-      # Defaults to $HADOOP_BIN or /usr/bin/hadoop
-      ## hadoop_bin=/usr/bin/hadoop
-
-      # Defaults to $HADOOP_CONF_DIR or /etc/hadoop/conf
-      ## hadoop_conf_dir=/etc/hadoop/conf
 
       # URL of the ResourceManager API
       ## resourcemanager_api_url=http://localhost:8088
@@ -575,14 +614,17 @@
 
       # URL of the HistoryServer API
       # history_server_api_url=http://localhost:19888
-
+   
+      # In secure mode (HTTPS), if SSL certificates from Resource Manager's
+      # Rest Server have to be verified against certificate authority
+      ssl_cert_ca_verify=False
   # Configuration for MapReduce (MR1)
   # ------------------------------------------------------------------------
   [[mapred_clusters]]
 
     [[[default]]]
       # Enter the host on which you are running the Hadoop JobTracker
-      jobtracker_host=localhost
+      jobtracker_host={{mapr_active_jobtracker}}
 
       # The port where the JobTracker IPC listens on
       jobtracker_port=9001
@@ -593,23 +635,14 @@
       # Thrift plug-in port for the JobTracker
       ## thrift_port=9290
 
+      # jobtracker kerberos principal name
+      jt_kerberos_principal=mapr
+
       # Whether to submit jobs to this cluster
       submit_to=True
 
       # Change this if your MapReduce cluster is Kerberos-secured
       ## security_enabled=false
-
-      # Settings about this MR1 cluster. If you install MR1 in a
-      # different location, you need to set the following.
-
-      # Defaults to $HADOOP_MR1_HOME or /usr/lib/hadoop-0.20-mapreduce
-      hadoop_mapred_home=/opt/mapr/hadoop/hadoop-0.20.2
-
-      # Defaults to $HADOOP_BIN or /usr/bin/hadoop
-      hadoop_bin=/opt/mapr/hadoop/hadoop-0.20.2/bin/hadoop
-
-      # Defaults to $HADOOP_CONF_DIR or /etc/hadoop/conf
-      hadoop_conf_dir=/opt/mapr/hadoop/hadoop-0.20.2/conf
 
     # HA support by specifying multiple clusters
     # e.g.
@@ -618,15 +651,13 @@
       # Enter the host on which you are running the failover JobTracker
       # jobtracker_host=localhost-ha
 
-      # Defaults to $HADOOP_MR1_HOME or /usr/lib/hadoop-0.20-mapreduce
-      #hadoop_mapred_home=/opt/mapr/hadoop/hadoop-0.20.2
+###########################################################################
+# Settings to configure the Filebrowser app
+###########################################################################
 
-      # Defaults to $HADOOP_BIN or /usr/bin/hadoop
-      #hadoop_bin=/opt/mapr/hadoop/hadoop-0.20.2/bin/hadoop
-
-      # Defaults to $HADOOP_CONF_DIR or /etc/hadoop/conf
-      #hadoop_conf_dir=/opt/mapr/hadoop/hadoop-0.20.2/conf
-
+[filebrowser]
+  # Location on local filesystem where the uploaded archives are temporary stored.
+  ## archive_upload_tempdir=/tmp
 
 ###########################################################################
 # Settings to configure liboozie
@@ -673,13 +704,13 @@
 
   # Host where Hive server Thrift daemon is running.
   # If Kerberos security is enabled, use fully-qualified domain name (FQDN).
-  ## hive_server_host=localhost
+  hive_server_host={{mapr_hiveserver2}}
 
   # Port where HiveServer2 Thrift server runs on.
-  ## hive_server_port=10000
+  hive_server_port=10000
 
   # Hive configuration directory, where hive-site.xml is located
-  ## hive_conf_dir=/opt/mapr/hive/hive-0.13/conf
+  hive_conf_dir=/opt/mapr/hive/hive-0.13/conf
 
   # Timeout in seconds for thrift calls to Hive service
   ## server_conn_timeout=120
@@ -699,6 +730,9 @@
   # Hue will try to close the Hive query when the user leaves the editor page.
   # This will free all the query resources in HiveServer2, but also make its results inaccessible.
   ## close_queries=false
+
+  # Default thrift version to use when communicating with HiveServer2
+  # thrift_version=2
 
   [[ssl]]
     # SSL communication enabled for this server.
@@ -726,7 +760,7 @@
   ## local_sample_dir=/opt/mapr/pig/pig-0.12/contrib/piggybank/java/
 
   # Location piggybank.jar will be copied to in HDFS.
-  remote_data_dir=/oozie/pig/examples
+  ## remote_data_dir=/oozie/pig/examples
 
 
 ###########################################################################
@@ -761,7 +795,7 @@
 
 [impala]
   # Host of the Impala Server (one of the Impalad)
-  ## server_host=localhost
+  server_host={{mapr_impalaserver}}
 
   # Port of the Impala Server
   ## server_port=21050
@@ -770,12 +804,12 @@
   ## impala_principal=impala/hostname.foo.com
 
   # Turn on/off impersonation mechanism when talking to Impala
-  ## impersonation_enabled=False
+  impersonation_enabled=False
 
   # Number of initial rows of a result set to ask Impala to cache in order
   # to support re-fetching them for downloading them.
   # Set to 0 for disabling the option and backward compatibility.
-  ## querycache_rows=50000
+  querycache_rows=0
 
   # Timeout in seconds for thrift calls
   ## server_conn_timeout=120
@@ -786,7 +820,7 @@
 
 
 ###########################################################################
-# Settings to configure Hbase
+# Settings to configure HBase Browser
 ###########################################################################
 
 [hbase]
@@ -796,6 +830,11 @@
 
   # Hard limit of rows or columns per row fetched before truncating.
   ## truncate_limit = 500
+
+  # 'buffered' is the default of the HBase Thrift Server.
+  # 'framed' can be used to chunk up responses,
+  # which is useful when used in conjunction with the nonblocking server in Thrift.
+  ## thrift_transport=buffered
 
 
 ###########################################################################
@@ -815,6 +854,25 @@
 
 
 ###########################################################################
+# Settings to configure Solr Indexer
+###########################################################################
+
+[indexer]
+
+  # Location of the solrctl binary.
+  ## solrctl_path=/usr/bin/solrctl
+
+  # Location of the solr home.
+  ## solr_home=/usr/lib/solr
+
+  # Zookeeper ensemble.
+  ## solr_zk_ensemble=localhost:2181/solr
+
+  # The contents of this directory will be copied over to the solrctl host to its temporary directory.
+  ## config_template_path=/../hue/desktop/libs/indexer/src/data/solr_configs
+
+
+###########################################################################
 # Settings to configure Job Designer
 ###########################################################################
 
@@ -828,7 +886,7 @@
 
 
 ###########################################################################
-# Settings to configure Job Browser
+# Settings to configure Job Browser.
 ###########################################################################
 
 [jobbrowser]
@@ -848,7 +906,7 @@
     [[[default]]]
       # Zookeeper ensemble. Comma separated list of Host/Port.
       # e.g. localhost:5181,node2_ip@:5181,node3_ip@:5181
-      host_ports=localhost:5181
+      host_ports={{mapr_zookeepers}}
 
       # The URL of the REST contrib service (required for znode browsing)
       rest_url=http://localhost:9999
