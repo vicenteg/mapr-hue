@@ -20,6 +20,9 @@
     - name: Copy Hue plugins to Jobtrackers
       copy: src=/tmp/hue-plugins-3.6.0-mapr.jar dest="{{mapr_hadoop1_path}}/lib"
 
+    - name: restart jobtrackers
+      command: maprcli node services -name jobtracker -action restart -filter csvc==jobtracker
+
 #- hosts: cluster
 #  gather_facts : no
 #  tasks:
