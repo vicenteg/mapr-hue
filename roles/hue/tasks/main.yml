@@ -3,17 +3,24 @@
 
 - include: prereqs.yml
 
-- name: Install Packages
+- name: Install hue and hbase-thrift gateway
   apt: pkg={{ item }} state=present 
   with_items:
     - mapr-hue
+    - mapr-hbasethrift
   when: ansible_distribution == 'Ubuntu'
+  notify: reconfigure roles
 
-- name: Install Packages
+- name: Install hue and hbase-thrift gateway
   yum: pkg={{ item }} state=present 
   with_items:
     - mapr-hue
+    - mapr-hbasethrift
   when: ansible_distribution in ('CentOS', 'RedHat', 'Amazon')
+  notify: reconfigure roles
+
+- name: configure HBase to MapR DB table mapping 
+  hadoop_properties: name=hbase.table.namespace.mappings value="*:/tables" file={{mapr_hadoop2_path}}/etc/hadoop/core-site.xml
 
 - name: register the hue path
   shell: ls -d /opt/mapr/hue/hue-* | tail -1
@@ -30,6 +37,7 @@
 
 - name: install hue.ini
   template: src=hue-3.6.ini.j2 dest=/opt/mapr/hue/hue-3.6.0/desktop/conf/hue.ini mode=0644 owner=mapr group=mapr backup=yes
+  notify: restart hue
 
 - name: fetch the hue plugins
   sudo: no
