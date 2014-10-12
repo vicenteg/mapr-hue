@@ -4,6 +4,7 @@
     file: "{{mapr_hadoop1_path}}/conf/mapred-site.xml"
     name: 'jobtracker.thrift.address'
     value: '0.0.0.0:9290'
+  notify: restart jobtracker
 
 #- name: configure jobtracker (mr2) thrift address
 #  hadoop_properties:
@@ -16,6 +17,7 @@
     file: "{{mapr_hadoop1_path}}/conf/mapred-site.xml"
     name: 'mapred.jobtracker.plugins'
     value: 'org.apache.hadoop.thriftfs.ThriftJobTrackerPlugin'
+  notify: restart jobtracker
       
 #- name: configure jobtracker plugins (mr2)
 #  hadoop_properties:
@@ -28,12 +30,14 @@
     file: "{{mapr_hadoop1_path}}/conf/core-site.xml"
     name: 'hadoop.proxyuser.mapr.hosts'
     value: '*'
+  notify: restart jobtracker
 
 - name: enable impersonation in Hue (groups) (mr1)
   hadoop_properties:
     file: "{{mapr_hadoop1_path}}/conf/core-site.xml"
     name: 'hadoop.proxyuser.mapr.groups'
     value: '*'
+  notify: restart jobtracker
 
 #- name: enable impersonation in Hue (hosts) (mr2)
 #  hadoop_properties:

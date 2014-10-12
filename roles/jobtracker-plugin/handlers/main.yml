@@ -1,2 +1,5 @@
 ---
 # handlers file for jobtracker-plugin
+
+- name: restart jobtrackers
+  command: maprcli node services -name jobtracker -action restart -filter csvc==jobtracker
