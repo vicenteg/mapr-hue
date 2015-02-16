@@ -2,3 +2,9 @@
 # file: roles/common/handlers/main.yml
 - name: restart ntp
   service: name=ntp state=restarted
+
+- name: reconfigure roles
+  command: /opt/mapr/server/configure.sh -R
+
+- name: restart hue
+  command: maprcli node services -name hue -action restart -filter csvc==hue

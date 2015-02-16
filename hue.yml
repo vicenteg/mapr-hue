@@ -12,6 +12,15 @@
     - mapr-oozie
     - mapr-pig
     - hue
+  tasks:
+    - name: check whether tables volume exists
+      shell: maprcli volume list -columns volumename | grep tables
+      register: tables_volume
+      failed_when: tables_volume.rc not in (0,1)
+
+    - name: create a volume for mapr tables
+      command: maprcli volume create -name tables -path /tables
+      when: tables_volume.rc == 1
 
 - hosts: jobtracker
   roles:
@@ -23,16 +32,3 @@
     - name: restart jobtrackers
       command: maprcli node services -name jobtracker -action restart -filter csvc==jobtracker
 
-#- hosts: cluster
-#  gather_facts : no
-#  tasks:
-#    - name: Bringing up all services
-#      shell: echo " "
-#      notify: 
-#        - Restart Jobtracker
-#        - Pause after Jobtracker
-#        - Start Oozie
-#        #- Pause before Beeswax
-#        #- Start Beeswax
-#        - Pause before Hue
-#        - Start Hue
