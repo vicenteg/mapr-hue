@@ -23,6 +23,7 @@
     - mysql51-libs
     - MySQL-python
   when: ansible_distribution in ("RedHat", "CentOS", "Amazon")
+  environment: proxy_env
 
 - name: Install hue and hbase-thrift gateway
   yum: pkg={{ item }} state=present
@@ -32,6 +33,7 @@
   when: ansible_distribution in ('CentOS', 'RedHat', 'Amazon')
   environment: proxy_env
   notify: reconfigure roles
+  environment: proxy_env
 
 - name: ensure hue database exists
   mysql_db:
