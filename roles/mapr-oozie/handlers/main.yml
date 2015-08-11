@@ -1,4 +1,0 @@
----
-# handlers file for oozie
-- name: reconfigure roles
-  command: /opt/mapr/server/configure.sh -R
