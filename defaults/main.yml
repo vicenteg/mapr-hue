@@ -1,7 +1,7 @@
 ---
 
-hue_version: 3.8.1
-hue_build: 201508031317-1
+hue_version: 3.7.0
+hue_build: 201507061400-1
 
 hive_version: 1.0
 hiveserver2_host: '{{groups["hiveserver"][0]}}'

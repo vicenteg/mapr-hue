@@ -111,7 +111,7 @@
 
   # Comma separated list of apps to not load at server startup.
   # e.g.: pig,zookeeper
-  app_blacklist=search,zookeeper
+  app_blacklist=search,zookeeper,spark,impala,sqoop,sentry
 
   # The directory where to store the auditing logs. Auditing is disable if the value is empty.
   # e.g. /var/log/hue/audit.log
@@ -844,7 +844,7 @@
 
   # Host where HiveServer2 is running.
   # If Kerberos security is enabled, use fully-qualified domain name (FQDN).
-  hive_server_host={{hiveserver2_host}}
+  hive_server_host={{hostvars[hiveserver2_host].ansible_fqdn}}
 
   # Port where HiveServer2 Thrift server runs on.
   hive_server_port={{hiveserver2_port|default(10000)}}
