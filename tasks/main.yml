@@ -17,10 +17,23 @@
   register: hadoop2_version
   changed_when: false
 
-- name: install prereq packages for RH/CentOS
+- name: install mysql51-libs if on AMZ Linux
   yum: name={{item}} state=present
   with_items:
     - mysql51-libs
+  when: ansible_distribution in ("Amazon")
+  environment: proxy_env
+
+- name: install mysql-libs on CentOS
+  yum: name={{item}} state=present
+  with_items:
+    - mysql-libs
+  when: ansible_distribution in ("CentOS", "RedHat")
+  environment: proxy_env
+
+- name: install prereq packages for RH/CentOS
+  yum: name={{item}} state=present
+  with_items:
     - MySQL-python
   when: ansible_distribution in ("RedHat", "CentOS", "Amazon")
   environment: proxy_env
