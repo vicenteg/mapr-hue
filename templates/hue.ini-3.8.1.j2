@@ -111,7 +111,7 @@
 
   # Comma separated list of apps to not load at server startup.
   # e.g.: pig,zookeeper
-  app_blacklist=search,zookeeper,spark,impala,sqoop,sentry
+  app_blacklist=search,zookeeper,spark,impala,sqoop,libsentry
 
   # The directory where to store the auditing logs. Auditing is disable if the value is empty.
   # e.g. /var/log/hue/audit.log
@@ -727,7 +727,7 @@
       ## resourcemanager_port=8032
 
       # Whether to submit jobs to this cluster
-      ## submit_to=True
+      submit_to=True
 
       # Change this if your YARN cluster is secured
       security_enabled=${security_enabled}
@@ -754,39 +754,6 @@
     # [[[ha]]]
       # Resource Manager logical name (required for HA)
       ## logical_name=my-rm-name
-
-  # Configuration for MapReduce (MR1)
-  # ------------------------------------------------------------------------
-  [[mapred_clusters]]
-
-    [[[default]]]
-      # Enter the host on which you are running the Hadoop JobTracker
-      jobtracker_host={{jobtracker_host}}
-
-      # The port where the JobTracker IPC listens on
-      jobtracker_port=9001
-
-      # JobTracker logical name for HA
-      ## logical_name=
-
-      # Thrift plug-in port for the JobTracker
-      ## thrift_port=9290
-
-      # Whether to submit jobs to this cluster
-      submit_to=True
-
-      # Change this if your MapReduce cluster is secured
-      security_enabled=${security_enabled}
-
-      # Security mechanism of authentication none/GSSAPI/MAPR-SECURITY
-      mechanism=${mechanism}
-
-    # HA support by specifying multiple clusters
-    # e.g.
-
-    # [[[ha]]]
-      # Enter the logical name of the JobTrackers
-      ## logical_name=my-jt-name
 
 
 ###########################################################################
@@ -866,7 +833,7 @@
 
   # Choose whether to use the old GetLog() thrift call from before Hive 0.14 to retrieve the logs.
   # If false, use the FetchResults() thrift call from Hive 1.0 or more instead.
-  ## use_get_log_api=false
+  use_get_log_api=false
 
   # Set a LIMIT clause when browsing a partitioned table.
   # A positive value will be set as the LIMIT. If 0 or negative, do not set any limit.
