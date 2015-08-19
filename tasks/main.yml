@@ -42,7 +42,7 @@
   yum: pkg={{ item }} state=present
   with_items:
     - mapr-hue-{{hue_version}}.{{hue_build}}
-    - mapr-hbasethrift
+    - mapr-hbasethrift-{{hbase_version}}.{{hbase_build}}
   when: ansible_distribution in ('CentOS', 'RedHat', 'Amazon')
   environment: proxy_env
   notify: reconfigure roles
@@ -167,3 +167,5 @@
 #    file: "/opt/mapr/hadoop/hadoop-{{hadoop2_version.stdout}}/etc/hadoop/core-site.xml"
 #    name: 'hadoop.proxyuser.mapr.groups'
 #    value: '*'
+
+- pause: seconds=10
