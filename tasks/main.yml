@@ -88,8 +88,8 @@
     - "{{ansible_hostname}}"
     - "{{ansible_fqdn}}"
 
-- name: configure HBase to MapR DB table mapping 
-  hadoop_properties: name=hbase.table.namespace.mappings value="*:/tables" file=/opt/mapr/hadoop/hadoop-{{hadoop2_version.stdout}}/etc/hadoop/core-site.xml
+#- name: configure HBase to MapR DB table mapping 
+#  hadoop_properties: name=hbase.table.namespace.mappings value="*:/tables" file=/opt/mapr/hadoop/hadoop-{{hadoop2_version.stdout}}/etc/hadoop/core-site.xml state=present
 
 - name: generate hue_secret_key from /dev/urandom
   shell: dd if=/dev/urandom count=1024 | sha512sum | awk '{ print $1}'
