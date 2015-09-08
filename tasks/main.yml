@@ -18,6 +18,8 @@
   changed_when: false
 
 - name: install mysql51-libs if on AMZ Linux
+  sudo: yes
+  sudo_user: root
   yum: name={{item}} state=present
   with_items:
     - mysql51-libs
@@ -25,6 +27,8 @@
   environment: proxy_env
 
 - name: install mysql-libs on CentOS
+  sudo: yes
+  sudo_user: root
   yum: name={{item}} state=present
   with_items:
     - mysql-libs
@@ -32,6 +36,8 @@
   environment: proxy_env
 
 - name: install prereq packages for RH/CentOS
+  sudo: yes
+  sudo_user: root
   yum: name={{item}} state=present
   with_items:
     - MySQL-python
@@ -39,6 +45,8 @@
   environment: proxy_env
 
 - name: Install hue and hbase-thrift gateway
+  sudo: yes
+  sudo_user: root
   yum: pkg={{ item }} state=present
   with_items:
     - mapr-hue-{{hue_version}}.{{hue_build}}
@@ -56,21 +64,6 @@
     login_password="{{mysql_root_password}}"
     login_host="{{hue_db_host}}"
   register: createdb
-
-#- name: create mapr user@localhost
-#  mysql_user:
-#    name={{hue_db_user}}
-#    host="localhost"
-#    password="{{hue_db_pass}}"
-#    check_implicit_admin=yes
-#    priv={{hue_db}}.*:ALL
-#    login_user="{{mysql_root_user}}"
-#    login_password="{{mysql_root_password}}"
-#    login_host="{{hostvars[hive_metastore_host].ansible_hostname}}"
-#  with_items:
-#    - "{{ansible_default_ipv4.address}}"
-#    - "{{ansible_hostname}}"
-#    - "%"
 
 - name: create hue user@%
   mysql_user:
@@ -96,15 +89,21 @@
   register: hue_secret_key
 
 - name: install hue.ini
-  template: src=hue.ini-3.8.1.j2 dest=/opt/mapr/hue/hue-{{hue_version}}/desktop/conf/hue.ini mode=0644 owner=mapr group=mapr backup=yes
+  sudo: yes
+  sudo_user: '{{mapr_admin_username}}'
+  template: src=hue.ini-3.8.1.j2 dest=/opt/mapr/hue/hue-{{hue_version}}/desktop/conf/hue.ini mode=0644 owner='{{mapr_admin_username}}' group='{{mapr_admin_username}}' backup=yes
   notify: restart hue
 
 - name: run hue syncdb to populate MySQL tables
+  sudo: yes
+  sudo_user: '{{mapr_admin_username}}'
   command: /opt/mapr/hue/hue-{{hue_version}}/build/env/bin/hue syncdb --noinput
   when: createdb|changed
   register: syncdb
 
 - name: run hue migrate to populate MySQL tables
+  sudo: yes
+  sudo_user: '{{mapr_admin_username}}'
   command: /opt/mapr/hue/hue-{{hue_version}}/build/env/bin/hue migrate
   when: syncdb|changed
 
@@ -143,6 +142,8 @@
 #    value: 'org.apache.hadoop.thriftfs.ThriftJobTrackerPlugin'
 
 - name: enable impersonation in Hue (hosts) (mr1)
+  sudo: yes
+  sudo_user: '{{mapr_admin_username}}'
   hadoop_properties:
     file: "/opt/mapr/hadoop/hadoop-{{hadoop1_version.stdout}}/conf/core-site.xml"
     name: 'hadoop.proxyuser.mapr.hosts'
@@ -150,6 +151,8 @@
   notify: restart jobtracker
 
 - name: enable impersonation in Hue (groups) (mr1)
+  sudo: yes
+  sudo_user: '{{mapr_admin_username}}'
   hadoop_properties:
     file: "/opt/mapr/hadoop/hadoop-{{hadoop1_version.stdout}}/conf/core-site.xml"
     name: 'hadoop.proxyuser.mapr.groups'
