@@ -6,6 +6,7 @@
   sudo_user: '{{mapr_admin_username}}'
   command: maprcli node listzookeepers -noheader
   register: zookeepers
+  changed_when: false
 
 - name: find mapreduce1 version
   shell: rpm -qa --queryformat '%{VERSION} %{RELEASE}' mapr-mapreduce1 | awk '{ print substr($0,0,6) }'
