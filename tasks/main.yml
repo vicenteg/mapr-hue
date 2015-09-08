@@ -168,4 +168,4 @@
 #    name: 'hadoop.proxyuser.mapr.groups'
 #    value: '*'
 
-- pause: seconds=10
+- pause: seconds=35
