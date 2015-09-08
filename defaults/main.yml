@@ -1,0 +1,26 @@
+---
+
+hue_version: 3.7.0
+hue_build: 201507061400-1
+
+hbase_version: 0.98.7
+hbase_build: 201501291259-1
+
+hive_version: 1.0
+hiveserver2_host: '{{groups["hiveserver"][0]}}'
+hiveserver2_port: 10000
+oozie_host: '{{groups["oozie"][0]}}'
+resourcemanager_host: '{{groups["resourcemanager"][0]}}'
+historyserver_host: '{{groups["historyserver"][0]}}'
+jobtracker_host: '{{groups["jobtracker"][0]}}'
+httpfs_host: '{{hiveserver2_host}}'
+impalaserver_host: '{{groups["impalaserver"][0]}}'
+
+hue_db_engine: mysql
+hue_db: hue
+hue_db_host: '{{hostvars[hive_metastore_host].ansible_fqdn}}'
+hue_db_user: hue
+hue_db_pass: mapr
+
+proxy_env: { }
+

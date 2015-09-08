@@ -1,0 +1,18 @@
+---
+galaxy_info:
+  author: Vince Gonzalez
+  description: Install mapr-hue
+  company: MapR
+  license: MIT
+  min_ansible_version: 1.2
+  platforms:
+  - name: EL
+    versions:
+    - 6
+    - 7
+  - name: Amazon
+dependencies:
+  - mapr_oozie
+  - mapr_pig
+  - mapr_hive
+  
