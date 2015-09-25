@@ -3,8 +3,8 @@
 hue_version: 3.7.0
 hue_build: 201507061400-1
 
-hbase_version: 0.98.7
-hbase_build: 201501291259-1
+hbase_version: 0.98.12
+hbase_build: 201507081709-1
 
 hive_version: 1.0
 hiveserver2_host: '{{groups["hiveserver"][0]}}'
