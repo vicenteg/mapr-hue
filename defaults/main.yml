@@ -1,7 +1,9 @@
 ---
 
-hue_version: 3.7.0
-hue_build: 201507061400-1
+#hue_version: 3.7.0
+#hue_build: 201507061400-1
+hue_version: 3.8.1
+hue_build: 201508031317-1
 
 hbase_version: 0.98.12
 hbase_build: 201507081709-1

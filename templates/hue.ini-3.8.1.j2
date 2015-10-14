@@ -736,7 +736,7 @@
       mechanism=${mechanism}
 
       # URL of the ResourceManager API
-      ## resourcemanager_api_url=http://localhost:8088
+      resourcemanager_api_url={% if secure_cluster %}https://{{resourcemanager_host}}:8090{% else %}resourcemanager_api_url=http://{{resourcemanager_host}}:8088{% endif %}
 
       # URL of the ProxyServer API
       ## proxy_api_url=http://localhost:8088
@@ -746,7 +746,7 @@
 
       # In secure mode (HTTPS), if SSL certificates from from YARN Rest APIs
       # have to be verified against certificate authority
-      ## ssl_cert_ca_verify=True
+      ssl_cert_ca_verify=False
 
     # HA support by specifying multiple clusters
     # e.g.
