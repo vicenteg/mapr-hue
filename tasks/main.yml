@@ -51,6 +51,7 @@
   yum: pkg={{ item }} state=present
   with_items:
     - mapr-hue-{{hue_version}}.{{hue_build}}
+    - mapr-hue-livy-{{hue_version}}.{{hue_build}}
     - mapr-hbasethrift-{{hbase_version}}.{{hbase_build}}
   when: ansible_distribution in ('CentOS', 'RedHat', 'Amazon')
   environment: proxy_env
@@ -89,12 +90,6 @@
   shell: dd if=/dev/urandom count=1024 | sha512sum | awk '{ print $1}'
   register: hue_secret_key
 
-- name: install hue.ini
-  sudo: yes
-  sudo_user: '{{mapr_admin_username}}'
-  template: src=hue.ini-3.8.1.j2 dest=/opt/mapr/hue/hue-{{hue_version}}/desktop/conf/hue.ini mode=0644 owner='{{mapr_admin_username}}' group='{{mapr_admin_username}}' backup=yes
-  notify: restart hue
-
 - name: run hue syncdb to populate MySQL tables
   sudo: yes
   sudo_user: '{{mapr_admin_username}}'
@@ -108,39 +103,32 @@
   command: /opt/mapr/hue/hue-{{hue_version}}/build/env/bin/hue migrate
   when: syncdb|changed
 
-#- name: fetch the hue plugins
-#  sudo: no
-#  fetch: src=/opt/mapr/hue/hue-{{hue_version}}/desktop/libs/hadoop/java-lib/hue-plugins-3.6.0-mapr.jar dest=/tmp flat=true validate_md5=false
-#  register: fetch
+- name: update hue.sh with HUE_HOME
+  sudo_user: root
+  lineinfile: dest=/opt/mapr/hue/hue-{{hue_version}}/bin/hue.sh regexp="export HUE_HOME=" line="export HUE_HOME=/opt/mapr/hue/hue-{{hue_version}}" insertafter="^\#\!" state=present
+  notify: restart hue
 
-#- name: Install Hue plugins to Jobtrackers
-#  shell: cp /opt/mapr/hue/{{hue_version.stdout}}/desktop/libs/hadoop/java-lib/hue-plugins-*.jar {{mapr_hadoop1_path}}/lib/
+- name: update hue.sh with HADOOP_CONF_DIR
+  sudo_user: root
+  lineinfile: dest=/opt/mapr/hue/hue-{{hue_version}}/bin/hue.sh regexp="export HADOOP_CONF_DIR=" line='export HADOOP_CONF_DIR="/opt/mapr/hadoop/hadoop-{{hadoop2_version.stdout}}/etc/hadoop"' insertafter="^\#\!" state=present
+  notify: restart hue
 
-#- name: configure jobtracker (mr1) thrift address
-#  hadoop_properties:
-#    file: "/opt/mapr/hadoop/hadoop-{{hadoop1_version.stdout}}/conf/mapred-site.xml"
-#    name: 'jobtracker.thrift.address'
-#    value: '0.0.0.0:9290'
-#  notify: restart jobtracker
+- name: update spark section of hue.ini, livy_server_host
+  sudo_user: root
+  lineinfile: dest=/opt/mapr/hue/hue-{{hue_version}}/desktop/conf/hue.ini regexp="livy_server_host" line='	livy_server_host={{inventory_hostname}}'
+  when: spark_enabled
+  notify: restart hue
 
-#- name: configure jobtracker (mr2) thrift address
-#  hadoop_properties:
-#    file: "/opt/mapr/hadoop/hadoop-{{hadoop1_version.stdout}}/conf/mapred-site.xml"
-#    name: 'jobtracker.thrift.address'
-#    value: '0.0.0.0:9290'
+- name: update spark section of hue.ini, livy_server_session_kind
+  sudo_user: root
+  lineinfile: dest=/opt/mapr/hue/hue-{{hue_version}}/desktop/conf/hue.ini regexp="livy_server_session" line='	livy_server_session_kind=yarn'
+  when: yarn_enabled
+  notify: restart hue
 
-#- name: configure jobtracker plugins (mr1)
-#  hadoop_properties:
-#    file: "/opt/mapr/hadoop/hadoop-{{hadoop1_version.stdout}}/conf/mapred-site.xml"
-#    name: 'mapred.jobtracker.plugins'
-#    value: 'org.apache.hadoop.thriftfs.ThriftJobTrackerPlugin'
-#  notify: restart jobtracker
-      
-#- name: configure jobtracker plugins (mr2)
-#  hadoop_properties:
-#    file: "/opt/mapr/hadoop/hadoop-{{hadoop2_version.stdout}}/etc/hadoop/mapred-site.xml"
-#    name: 'mapred.jobtracker.plugins'
-#    value: 'org.apache.hadoop.thriftfs.ThriftJobTrackerPlugin'
+- name: update spark section of hue.ini, livy_impersonation_enabled
+  sudo_user: root
+  lineinfile: dest=/opt/mapr/hue/hue-{{hue_version}}/desktop/conf/hue.ini regexp="livy_impersonation_enabled" line='	livy_impersonation_enabled=true'
+  notify: restart hue
 
 - name: enable impersonation in Hue (hosts) (mr1)
   sudo: yes
@@ -159,17 +147,5 @@
     name: 'hadoop.proxyuser.mapr.groups'
     value: '*'
   notify: restart jobtracker
-
-#- name: enable impersonation in Hue (hosts) (mr2)
-#  hadoop_properties:
-#    file: "/opt/mapr/hadoop/hadoop-{{hadoop2_version.stdout}}/etc/hadoop/core-site.xml"
-#    name: 'hadoop.proxyuser.mapr.hosts'
-#    value: '*'
-
-#- name: enable impersonation in Hue (groups) (mr2)
-#  hadoop_properties:
-#    file: "/opt/mapr/hadoop/hadoop-{{hadoop2_version.stdout}}/etc/hadoop/core-site.xml"
-#    name: 'hadoop.proxyuser.mapr.groups'
-#    value: '*'
 
 - pause: seconds=35

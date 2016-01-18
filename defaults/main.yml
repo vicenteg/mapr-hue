@@ -1,14 +1,12 @@
 ---
 
-#hue_version: 3.7.0
-#hue_build: 201507061400-1
-hue_version: 3.8.1
-hue_build: 201508031317-1
+hue_version: 3.9.0
+hue_build: 201511191616-1
 
 hbase_version: 0.98.12
 hbase_build: 201507081709-1
 
-hive_version: 1.0
+hive_version: 1.2
 hiveserver2_host: '{{groups["hiveserver"][0]}}'
 hiveserver2_port: 10000
 oozie_host: '{{groups["oozie"][0]}}'

@@ -7,7 +7,6 @@
   command: /opt/mapr/server/configure.sh -R
 
 - name: restart hue
-  sudo: yes
   sudo_user: '{{mapr_admin_username}}'
   command: maprcli node services -name hue -action restart -filter csvc==hue
 
