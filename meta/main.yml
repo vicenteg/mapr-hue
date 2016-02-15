@@ -12,7 +12,7 @@ galaxy_info:
     - 7
   - name: Amazon
 dependencies:
-  - mapr_oozie
-  - mapr_pig
-  - mapr_hive
+  - { role: vicenteg.mapr_oozie }
+  - { role: vicenteg.mapr_pig }
+  - { role: vicenteg.mapr_hive }
   
