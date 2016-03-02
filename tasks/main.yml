@@ -90,6 +90,10 @@
   shell: dd if=/dev/urandom count=1024 | sha512sum | awk '{ print $1}'
   register: hue_secret_key
 
+- name: install hue.ini
+  template: src=hue.ini.j2 dest=/opt/mapr/hue/hue-{{hue_version}}/desktop/conf/hue.ini backup=yes owner=root group=root
+  sudo_user: root
+
 - name: run hue syncdb to populate MySQL tables
   sudo: yes
   sudo_user: '{{mapr_admin_username}}'
@@ -122,12 +126,13 @@
 - name: update spark section of hue.ini, livy_server_session_kind
   sudo_user: root
   lineinfile: dest=/opt/mapr/hue/hue-{{hue_version}}/desktop/conf/hue.ini regexp="livy_server_session" line='	livy_server_session_kind=yarn'
-  when: yarn_enabled
+  when: yarn_enabled and spark_enabled
   notify: restart hue
 
 - name: update spark section of hue.ini, livy_impersonation_enabled
   sudo_user: root
   lineinfile: dest=/opt/mapr/hue/hue-{{hue_version}}/desktop/conf/hue.ini regexp="livy_impersonation_enabled" line='	livy_impersonation_enabled=true'
+  when: spark_enabled
   notify: restart hue
 
 - name: enable impersonation in Hue (hosts) (mr1)
@@ -138,6 +143,7 @@
     name: 'hadoop.proxyuser.mapr.hosts'
     value: '*'
   notify: restart jobtracker
+  when: classic_enabled
 
 - name: enable impersonation in Hue (groups) (mr1)
   sudo: yes
@@ -147,5 +153,6 @@
     name: 'hadoop.proxyuser.mapr.groups'
     value: '*'
   notify: restart jobtracker
+  when: classic_enabled
 
-- pause: seconds=35
+- pause: seconds=15
