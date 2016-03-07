@@ -125,7 +125,7 @@
 
   # Comma separated list of apps to not load at server startup.
   # e.g.: pig,zookeeper
-  app_blacklist=search,zookeeper
+  app_blacklist=search,zookeeper,{% if not impala_enabled %}impala{% endif %}
 
   # The directory where to store the auditing logs. Auditing is disable if the value is empty.
   # e.g. /var/log/hue/audit.log
@@ -744,7 +744,7 @@
 
     [[[default]]]
       # Enter the host on which you are running the ResourceManager
-      resourcemanager_host={{groups["resourcemanager"][0]}}
+      resourcemanager_host={{hostvars[groups["resourcemanager"][0]].ansible_hostname}}
       logical_name=yarn-{{cluster_name}}
 
       # The port where the ResourceManager IPC listens on
@@ -761,20 +761,20 @@
 
       # URL of the ResourceManager API
 {% if secure_cluster %}
-      resourcemanager_api_url=https://{{groups["resourcemanager"][0]}}:8090
+      resourcemanager_api_url=https://{{hostvars[groups["resourcemanager"][0]].ansible_hostname}}:8090
 {% else %}
-      resourcemanager_api_url=http://{{groups["resourcemanager"][0]}}:8088
+      resourcemanager_api_url=http://{{hostvars[groups["resourcemanager"][0]].ansible_hostname}}:8088
 {% endif %}
 
       # URL of the ProxyServer API
 {% if secure_cluster %}
-      proxy_api_url=https://{{groups["resourcemanager"][0]}}:8090
+      proxy_api_url=https://{{hostvars[groups["resourcemanager"][0]].ansible_hostname}}:8090
 {% else %}
-      proxy_api_url=http://{{groups["resourcemanager"][0]}}:8088
+      proxy_api_url=http://{{hostvars[groups["resourcemanager"][0]].ansible_hostname}}:8088
 {% endif %}
 
       # URL of the HistoryServer API
-      history_server_api_url=http://{{groups["historyserver"][0]}}:19888
+      history_server_api_url=http://{{hostvars[groups["historyserver"][0]].ansible_hostname}}:19888
 
       # In secure mode (HTTPS), if SSL certificates from YARN Rest APIs
       # have to be verified against certificate authority
@@ -789,21 +789,20 @@
       logical_name=yarn-{{cluster_name}}
       submit_to=True
 	{% if secure_cluster %}
-      resourcemanager_api_url=https://{{groups["resourcemanager"][1]}}:8090
+      resourcemanager_api_url=https://{{hostvars[groups["resourcemanager"][1]].ansible_hostname}}:8090
 	{% else %}
-      resourcemanager_api_url=http://{{groups["resourcemanager"][1]}}:8088
+      resourcemanager_api_url=http://{{hostvars[groups["resourcemanager"][1]].ansible_hostname}}:8088
 	{% endif %}
 {% endif %}
 {% endif %}
 
-{% if classic_enabled %}
   # Configuration for MapReduce (MR1)
   # ------------------------------------------------------------------------
   [[mapred_clusters]]
 
     [[[default]]]
       # Enter the host on which you are running the Hadoop JobTracker
-      jobtracker_host=localhost
+      jobtracker_host={{groups['jobtracker']|first}}
 
       # The port where the JobTracker IPC listens on
       jobtracker_port=9001
@@ -829,7 +828,6 @@
     # [[[ha]]]
       # Enter the logical name of the JobTrackers
       ## logical_name=my-jt-name
-{% endif %}
 
 
 ###########################################################################
@@ -934,6 +932,7 @@
 
 {% endif %}
 
+{% if impala_enabled %}
 ###########################################################################
 # Settings to configure Impala
 ###########################################################################
@@ -977,6 +976,7 @@
     # Choose whether Hue should validate certificates received from the server.
     ## validate=true
 
+{% endif %}
 
 ###########################################################################
 # Settings to configure Pig
