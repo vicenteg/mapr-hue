@@ -54,7 +54,6 @@
     - mapr-hue-livy-{{hue_version}}.{{hue_build}}
     - mapr-hbasethrift-{{hbase_version}}.{{hbase_build}}
   when: ansible_distribution in ('CentOS', 'RedHat', 'Amazon')
-  environment: proxy_env
   notify: reconfigure roles
   environment: proxy_env
 
@@ -98,14 +97,11 @@
   sudo: yes
   sudo_user: '{{mapr_admin_username}}'
   command: /opt/mapr/hue/hue-{{hue_version}}/build/env/bin/hue syncdb --noinput
-  when: createdb|changed
-  register: syncdb
 
 - name: run hue migrate to populate MySQL tables
   sudo: yes
   sudo_user: '{{mapr_admin_username}}'
   command: /opt/mapr/hue/hue-{{hue_version}}/build/env/bin/hue migrate
-  when: syncdb|changed
 
 - name: update hue.sh with HUE_HOME
   sudo_user: root
