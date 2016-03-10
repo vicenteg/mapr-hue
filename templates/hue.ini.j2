@@ -1113,7 +1113,7 @@
     [[[default]]]
       # Zookeeper ensemble. Comma separated list of Host/Port.
       # e.g. localhost:5181,node2_ip@:5181,node3_ip@:5181
-      host_ports={% for node in groups['zookeepers'] -%}{{ hostvars[node].ansible_fqdn }}:5181,{% endfor %}
+      host_ports={% for node in groups['zookeeper'] -%}{{ hostvars[node].ansible_fqdn }}:5181,{% endfor %}
 
       # The URL of the REST contrib service (required for znode browsing).
       rest_url=http://localhost:9999
