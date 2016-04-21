@@ -1030,7 +1030,7 @@
   # Comma-separated list of HBase Thrift servers for clusters in the format of '(name|host:port)'.
   # Use full hostname with security.
   # If using Kerberos we assume GSSAPI SASL, not PLAIN.
-  hbase_clusters=(Cluster|{{groups["hue"]|first}}:9095)
+  hbase_clusters={% for node in groups['hue'] -%}({{node}}|{{node}}:9090),{% endfor %}
 
   # HBase configuration directory, where hbase-site.xml is located.
   ## hbase_conf_dir=/opt/mapr/hbase/hbase-0.98.4/conf
