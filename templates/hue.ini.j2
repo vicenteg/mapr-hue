@@ -739,13 +739,15 @@
 
 {% if yarn_enabled %}
   # Configuration for YARN (MR2)
+  # Note that RM URL will be discovered with maprcli urls -name resourcemanager
+  # If hue is not finding the RM, check that the command works.
   # ------------------------------------------------------------------------
   [[yarn_clusters]]
 
     [[[default]]]
       # Enter the host on which you are running the ResourceManager
-      resourcemanager_host={{hostvars[groups["resourcemanager"][0]].ansible_hostname}}
-      logical_name=yarn-{{cluster_name}}
+      # resourcemanager_host=maprfs:///
+      # logical_name=yarn-{{cluster_name}}
 
       # The port where the ResourceManager IPC listens on
       ## resourcemanager_port=8032
@@ -761,16 +763,16 @@
 
       # URL of the ResourceManager API
 {% if secure_cluster %}
-      resourcemanager_api_url=https://{{hostvars[groups["resourcemanager"][0]].ansible_hostname}}:8090
+      # resourcemanager_api_url=https://{{hostvars[groups["resourcemanager"][0]].ansible_hostname}}:8090
 {% else %}
-      resourcemanager_api_url=http://{{hostvars[groups["resourcemanager"][0]].ansible_hostname}}:8088
+      # resourcemanager_api_url=http://{{hostvars[groups["resourcemanager"][0]].ansible_hostname}}:8088
 {% endif %}
 
       # URL of the ProxyServer API
 {% if secure_cluster %}
-      proxy_api_url=https://{{hostvars[groups["resourcemanager"][0]].ansible_hostname}}:8090
+      # proxy_api_url=https://{{hostvars[groups["resourcemanager"][0]].ansible_hostname}}:8090
 {% else %}
-      proxy_api_url=http://{{hostvars[groups["resourcemanager"][0]].ansible_hostname}}:8088
+      # proxy_api_url=http://{{hostvars[groups["resourcemanager"][0]].ansible_hostname}}:8088
 {% endif %}
 
       # URL of the HistoryServer API
@@ -802,7 +804,7 @@
 
     [[[default]]]
       # Enter the host on which you are running the Hadoop JobTracker
-      jobtracker_host={{groups['jobtracker']|first}}
+      jobtracker_host=maprfs:///
 
       # The port where the JobTracker IPC listens on
       jobtracker_port=9001
