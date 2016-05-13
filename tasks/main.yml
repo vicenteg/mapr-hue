@@ -96,12 +96,12 @@
 - name: run hue syncdb to populate MySQL tables
   sudo: yes
   sudo_user: '{{mapr_admin_username}}'
-  command: /opt/mapr/hue/hue-{{hue_version}}/build/env/bin/hue syncdb --noinput
+  command: /opt/mapr/hue/hue-{{hue_version}}/build/env/bin/python /opt/mapr/hue/hue-{{hue_version}}/build/env/bin/hue syncdb --noinput
 
 - name: run hue migrate to populate MySQL tables
   sudo: yes
   sudo_user: '{{mapr_admin_username}}'
-  command: /opt/mapr/hue/hue-{{hue_version}}/build/env/bin/hue migrate
+  command: /opt/mapr/hue/hue-{{hue_version}}/build/env/bin/python /opt/mapr/hue/hue-{{hue_version}}/build/env/bin/hue migrate
 
 - name: update hue.sh with HUE_HOME
   sudo_user: root
