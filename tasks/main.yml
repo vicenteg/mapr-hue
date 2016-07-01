@@ -2,8 +2,8 @@
 # file: roles/common/tasks/main.yml
 
 - name: find zookeepers
-  sudo: yes
-  sudo_user: '{{mapr_admin_username}}'
+  become: yes
+  become_user: '{{mapr_admin_username}}'
   command: maprcli node listzookeepers -noheader
   register: zookeepers
   changed_when: false
@@ -19,8 +19,8 @@
   changed_when: false
 
 - name: install mysql51-libs if on AMZ Linux
-  sudo: yes
-  sudo_user: root
+  become: yes
+  become_user: root
   yum: name={{item}} state=present
   with_items:
     - mysql51-libs
@@ -28,8 +28,8 @@
   environment: proxy_env
 
 - name: install mysql-libs on CentOS
-  sudo: yes
-  sudo_user: root
+  become: yes
+  become_user: root
   yum: name={{item}} state=present
   with_items:
     - mysql-libs
@@ -37,8 +37,8 @@
   environment: proxy_env
 
 - name: install prereq packages for RH/CentOS
-  sudo: yes
-  sudo_user: root
+  become: yes
+  become_user: root
   yum: name={{item}} state=present
   with_items:
     - MySQL-python
@@ -46,8 +46,8 @@
   environment: proxy_env
 
 - name: Install hue and hbase-thrift gateway
-  sudo: yes
-  sudo_user: root
+  become: yes
+  become_user: root
   yum: pkg={{ item }} state=present
   with_items:
     - mapr-hue-{{hue_version}}.{{hue_build}}
@@ -91,49 +91,55 @@
 
 - name: install hue.ini
   template: src=hue.ini.j2 dest=/opt/mapr/hue/hue-{{hue_version}}/desktop/conf/hue.ini backup=yes owner=root group=root
-  sudo_user: root
+  become: yes
+  become_user: root
 
 - name: run hue syncdb to populate MySQL tables
-  sudo: yes
-  sudo_user: '{{mapr_admin_username}}'
+  become: yes
+  become_user: '{{mapr_admin_username}}'
   command: /opt/mapr/hue/hue-{{hue_version}}/build/env/bin/python /opt/mapr/hue/hue-{{hue_version}}/build/env/bin/hue syncdb --noinput
 
 - name: run hue migrate to populate MySQL tables
-  sudo: yes
-  sudo_user: '{{mapr_admin_username}}'
+  become: yes
+  become_user: '{{mapr_admin_username}}'
   command: /opt/mapr/hue/hue-{{hue_version}}/build/env/bin/python /opt/mapr/hue/hue-{{hue_version}}/build/env/bin/hue migrate
 
 - name: update hue.sh with HUE_HOME
-  sudo_user: root
+  become: yes
+  become_user: root
   lineinfile: dest=/opt/mapr/hue/hue-{{hue_version}}/bin/hue.sh regexp="export HUE_HOME=" line="export HUE_HOME=/opt/mapr/hue/hue-{{hue_version}}" insertafter="^\#\!" state=present
   notify: restart hue
 
 - name: update hue.sh with HADOOP_CONF_DIR
-  sudo_user: root
+  become: yes
+  become_user: root
   lineinfile: dest=/opt/mapr/hue/hue-{{hue_version}}/bin/hue.sh regexp="export HADOOP_CONF_DIR=" line='export HADOOP_CONF_DIR="/opt/mapr/hadoop/hadoop-{{hadoop2_version.stdout}}/etc/hadoop"' insertafter="^\#\!" state=present
   notify: restart hue
 
 - name: update spark section of hue.ini, livy_server_host
-  sudo_user: root
+  become: yes
+  become_user: root
   lineinfile: dest=/opt/mapr/hue/hue-{{hue_version}}/desktop/conf/hue.ini regexp="livy_server_host" line='	livy_server_host={{inventory_hostname}}'
   when: spark_enabled
   notify: restart hue
 
 - name: update spark section of hue.ini, livy_server_session_kind
-  sudo_user: root
+  become: yes
+  become_user: root
   lineinfile: dest=/opt/mapr/hue/hue-{{hue_version}}/desktop/conf/hue.ini regexp="livy_server_session" line='	livy_server_session_kind=yarn'
   when: yarn_enabled and spark_enabled
   notify: restart hue
 
 - name: update spark section of hue.ini, livy_impersonation_enabled
-  sudo_user: root
+  become: yes
+  become_user: root
   lineinfile: dest=/opt/mapr/hue/hue-{{hue_version}}/desktop/conf/hue.ini regexp="livy_impersonation_enabled" line='	livy_impersonation_enabled=true'
   when: spark_enabled
   notify: restart hue
 
 - name: enable impersonation in Hue (hosts) (mr1)
-  sudo: yes
-  sudo_user: '{{mapr_admin_username}}'
+  become: yes
+  become_user: '{{mapr_admin_username}}'
   hadoop_properties:
     file: "/opt/mapr/hadoop/hadoop-{{hadoop1_version.stdout}}/conf/core-site.xml"
     name: 'hadoop.proxyuser.mapr.hosts'
@@ -142,8 +148,8 @@
   when: classic_enabled
 
 - name: enable impersonation in Hue (groups) (mr1)
-  sudo: yes
-  sudo_user: '{{mapr_admin_username}}'
+  become: yes
+  become_user: '{{mapr_admin_username}}'
   hadoop_properties:
     file: "/opt/mapr/hadoop/hadoop-{{hadoop1_version.stdout}}/conf/core-site.xml"
     name: 'hadoop.proxyuser.mapr.groups'

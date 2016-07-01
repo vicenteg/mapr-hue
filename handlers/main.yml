@@ -7,11 +7,12 @@
   command: /opt/mapr/server/configure.sh -R
 
 - name: restart hue
-  sudo_user: '{{mapr_admin_username}}'
+  become: yes
+  become_user: '{{mapr_admin_username}}'
   command: maprcli node services -name hue -action restart -filter csvc==hue
 
 - name: restart jobtrackers
-  sudo: yes
-  sudo_user: '{{mapr_admin_username}}'
+  become: yes
+  become_user: '{{mapr_admin_username}}'
   command: maprcli node services -name jobtracker -action restart -filter csvc==jobtracker
   when: classic_enabled is defined and classic_enabled == True

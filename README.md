@@ -11,7 +11,7 @@ Example Playbook
 - hosts: cluster
 
 - hosts: hue
-  sudo: yes
+  become: yes
   vars_files:
     - vars/global/main.yml
   roles:
