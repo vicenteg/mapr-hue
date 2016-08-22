@@ -25,7 +25,7 @@
   with_items:
     - mysql51-libs
   when: ansible_distribution in ("Amazon")
-  environment: proxy_env
+  environment: '{{proxy_env}}'
 
 - name: install mysql-libs on CentOS
   become: yes
@@ -34,7 +34,7 @@
   with_items:
     - mysql-libs
   when: ansible_distribution in ("CentOS", "RedHat")
-  environment: proxy_env
+  environment: '{{proxy_env}}'
 
 - name: install prereq packages for RH/CentOS
   become: yes
@@ -43,7 +43,7 @@
   with_items:
     - MySQL-python
   when: ansible_distribution in ("RedHat", "CentOS", "Amazon")
-  environment: proxy_env
+  environment: '{{proxy_env}}'
 
 - name: Install hue and hbase-thrift gateway
   become: yes
@@ -55,7 +55,7 @@
     - mapr-hbasethrift-{{hbase_version}}.{{hbase_build}}
   when: ansible_distribution in ('CentOS', 'RedHat', 'Amazon')
   notify: reconfigure roles
-  environment: proxy_env
+  environment: '{{proxy_env}}'
 
 - name: ensure hue database exists
   mysql_db:
